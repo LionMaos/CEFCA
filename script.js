@@ -160,7 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   /* ======================================================
-     MODUL 2: IERARHIA CHELTUIELILOR (reorder fără duplicate)
+     MODUL 2: IERARHIA CHELTUIELILOR
+     (fiecare cheltuială alege un număr 1-16 dintr-un meniu derulant;
+      numărul ales dispare din meniurile celorlalte cheltuieli, deci
+      structural nu pot exista două cheltuieli cu aceeași prioritate)
   ====================================================== */
   (function initExpenses() {
     const listEl = document.getElementById('expense-list-numeric');
@@ -195,8 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     const correctOrder = expenses.map(e => e.id); // index = poziția corectă (0-based)
     const textOf = Object.fromEntries(expenses.map(e => [e.id, e.text]));
+    const N = expenses.length;
 
-    let order = []; // ordinea curentă (array de id-uri), reflectă poziția din DOM
+    let displayOrder = []; // ordinea vizuală (fixă, doar amestecată la (re)start)
+    const assigned = {};   // id -> număr ales (1..16) sau null
 
     function shuffle(arr) {
       const a = [...arr];
@@ -207,41 +212,45 @@ document.addEventListener('DOMContentLoaded', () => {
       return a;
     }
 
+    function usedNumbers(excludeId) {
+      const used = new Set();
+      Object.entries(assigned).forEach(([id, val]) => {
+        if (id !== excludeId && val) used.add(val);
+      });
+      return used;
+    }
+
     function render() {
       listEl.innerHTML = '';
-      order.forEach((id, idx) => {
+      displayOrder.forEach((id) => {
         const li = document.createElement('li');
         li.className = 'expense-rank-item';
         li.dataset.id = id;
+
+        const used = usedNumbers(id);
+        const currentVal = assigned[id] || '';
+        let optionsHTML = `<option value="">-- alege --</option>`;
+        for (let n = 1; n <= N; n++) {
+          if (used.has(n) && n !== currentVal) continue; // numărul e deja luat de altă cheltuială
+          optionsHTML += `<option value="${n}" ${n === currentVal ? 'selected' : ''}>${n}</option>`;
+        }
+
         li.innerHTML = `
-          <span class="rank-number">${idx + 1}</span>
           <span class="expense-text">${textOf[id]}</span>
-          <span class="rank-arrows">
-            <button type="button" class="rank-arrow-btn" data-dir="up" ${idx === 0 ? 'disabled' : ''} aria-label="Mută mai sus">▲</button>
-            <button type="button" class="rank-arrow-btn" data-dir="down" ${idx === order.length - 1 ? 'disabled' : ''} aria-label="Mută mai jos">▼</button>
-          </span>`;
+          <select class="expense-priority-select" aria-label="Prioritate pentru ${textOf[id]}">${optionsHTML}</select>`;
         listEl.appendChild(li);
       });
     }
 
-    function moveItem(id, dir) {
-      const idx = order.indexOf(id);
-      const swapWith = dir === 'up' ? idx - 1 : idx + 1;
-      if (swapWith < 0 || swapWith >= order.length) return;
-      [order[idx], order[swapWith]] = [order[swapWith], order[idx]];
-      render();
-    }
-
-    listEl.addEventListener('click', (e) => {
-      const btn = e.target.closest('.rank-arrow-btn');
-      if (!btn) return;
-      const li = btn.closest('.expense-rank-item');
-      moveItem(li.dataset.id, btn.dataset.dir);
+    listEl.addEventListener('change', (e) => {
+      const select = e.target.closest('.expense-priority-select');
+      if (!select) return;
+      const li = select.closest('.expense-rank-item');
+      const id = li.dataset.id;
+      const val = parseInt(select.value, 10);
+      assigned[id] = isNaN(val) ? null : val;
+      render(); // recalculăm opțiunile disponibile pentru toate celelalte cheltuieli
     });
-
-    // Notă: am renunțat intenționat la drag-and-drop HTML5 (nu funcționează fiabil
-    // pe telefoane cu touch). Reordonarea se face exclusiv cu butoanele ▲▼, care
-    // funcționează identic pe mobil, tabletă și desktop.
 
     function hideElement(el) { el?.classList.add('hidden'); }
     function showElement(el, disp = 'block') { if (el) { el.classList.remove('hidden'); el.style.display = disp; } }
@@ -254,19 +263,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetList() {
-      order = shuffle(correctOrder);
+      displayOrder = shuffle(correctOrder);
+      correctOrder.forEach(id => { assigned[id] = null; });
       render();
       hideResults();
     }
 
     displayBtn.addEventListener('click', () => {
+      const missing = correctOrder.filter(id => !assigned[id]);
+      if (missing.length > 0) {
+        alert(`Atenție: mai ai ${missing.length} cheltuieli fără prioritate alocată. Completează-le pe toate înainte de comparație.`);
+        return;
+      }
+
       combinedList.innerHTML = '';
       let allMatch = true;
       let currentStreak = 0, maxStreak = 0, maxStreakStart = 0;
 
       correctOrder.forEach((id, index) => {
         const correctPos = index + 1;
-        const userPos = order.indexOf(id) + 1;
+        const userPos = assigned[id];
         const isMismatch = userPos !== correctPos;
         if (isMismatch) {
           allMatch = false;
@@ -305,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.addEventListener('click', () => scrollToEl(section));
     resetBtn.addEventListener('click', () => { resetList(); scrollToEl(section); });
 
-    resetList(); // ordine inițială amestecată
+    resetList(); // stare inițială: listă amestecată, fără priorități alocate
   })();
 
   /* ======================================================
@@ -346,6 +362,15 @@ document.addEventListener('DOMContentLoaded', () => {
       { category: 'Parole și 2FA', question: 'Care e cea mai bună metodă de a-ți proteja contul de internet banking?',
         options: ['O parolă cu numele tău și anul nașterii', 'Aceeași parolă pe care o folosești și pe alte site-uri', 'O parolă lungă, greu de ghicit, plus un cod de confirmare primit pe telefon la fiecare autentificare', 'O parolă scurtă, dar schimbată des'],
         correctAnswer: 2, explanation: 'O parolă sigură este lungă, conține litere mari și mici, cifre și caractere speciale, și nu conține informații personale. Cea mai bună protecție combină o parolă puternică cu autentificarea în doi pași (2FA).' },
+      { category: 'Schemă piramidală (Ponzi)', question: 'Un cunoscut îți spune că a găsit o platformă de investiții care oferă 30% profit garantat pe lună și te încurajează să aduci și alți prieteni, pentru un bonus. Ce ar trebui să te alerteze?',
+        options: ['E o oportunitate bună dacă platforma are un site frumos și mulți utilizatori', 'Un randament „garantat" de 30%/lună e nerealist, iar structura bazată pe aducerea de noi investitori e specifică unei scheme piramidale (Ponzi)', 'Ar trebui să investesc doar o sumă mică, ca test', 'Dacă prietenul meu a câștigat deja bani, sigur e sigur și pentru mine'],
+        correctAnswer: 1, explanation: 'Randamentele „garantate" mult peste piață, combinate cu recompense pentru aducerea de noi investitori, sunt semnătura clasică a schemelor piramidale (Ponzi). Banii noilor investitori plătesc „profitul" celor vechi, până când schema se prăbușește și majoritatea pierd tot.' },
+      { category: 'Broker fals pe rețele sociale', question: 'Pe Instagram, un „broker de investiții" cu poze de lux îți promite să-ți dubleze banii în cripto dacă îi trimiți suma prin transfer bancar sau portofel cripto. Ce faci?',
+        options: ['Îi trimit o sumă mică, să văd dacă funcționează', 'Îi cer să-mi trimită mai întâi un video ca dovadă că e serios', 'Nu trimit nimic — brokerii și platformele reale de investiții sunt autorizate de ASF, iar promisiunile de profit garantat pe rețele sociale sunt aproape mereu fraude', 'Accept doar dacă are mulți urmăritori și comentarii pozitive'],
+        correctAnswer: 2, explanation: 'Brokerii și platformele de investiții legitime din România sunt autorizate de ASF (Autoritatea de Supraveghere Financiară) și pot fi verificate pe asfromania.ro. Promisiunile de profit garantat, presiunea de a transfera rapid bani și lipsa unei autorizații verificabile sunt semne clare de fraudă cu investiții.' },
+      { category: 'Semnale de avertizare la orice investiție', question: 'Care este cel mai clar semnal că o „oportunitate de investiție" este de fapt o fraudă?',
+        options: ['Profit garantat, constant, mult peste dobânda bancară, indiferent de condițiile pieței', 'Compania publică rapoarte financiare anuale', 'Investiția are un risc explicat clar, inclusiv posibilitatea de a pierde bani', 'Poți afla oricând, din surse publice, cine deține și administrează compania'],
+        correctAnswer: 0, explanation: 'Orice investiție reală implică risc — nimeni nu poate garanta un profit fix, indiferent de piață. Când cineva promite „profit garantat" sau „fără risc", e aproape sigur o fraudă. Investițiile legitime explică deschis riscurile posibile, inclusiv pierderea banilor investiți.' },
     ];
 
     let currentIndex = 0, selectedOption = null, answered = false, score = 0;
@@ -473,6 +498,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     renderQuestion();
+
+    // ---- Toggle carduri de referință: principii de protecție + resurse ----
+    function setupToggle(btnId, contentId, labelClosed, labelOpen) {
+      const btn = document.getElementById(btnId);
+      const content = document.getElementById(contentId);
+      if (!btn || !content) return;
+      btn.addEventListener('click', () => {
+        const isHidden = content.classList.contains('hidden');
+        content.classList.toggle('hidden');
+        btn.textContent = isHidden ? labelOpen : labelClosed;
+      });
+    }
+    setupToggle('toggle-protection-btn', 'protection-content', '🛡️ Cum să te protejezi (principii)', '🛡️ Ascunde principiile');
+    setupToggle('toggle-resources-btn', 'resources-content', '📞 Unde anunți o fraudă', '📞 Ascunde');
   })();
 
   /* ======================================================
@@ -660,6 +699,160 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!saved.products || !saved.products.length) addProductRow();
       }
     } catch (e) { /* ignore */ }
+
+    // ---- Convertor valutar (curs fix orientativ, ca în aplicația originală) ----
+    const exchangeRates = { 'USD-RON': 4.45, 'EUR-RON': 4.97 };
+    const convBtn = document.getElementById('conv-btn');
+    if (convBtn) {
+      convBtn.addEventListener('click', () => {
+        const amount = parseFloat(document.getElementById('conv-amount').value) || 0;
+        const pair = document.getElementById('conv-pair').value;
+        const rate = exchangeRates[pair];
+        const converted = amount * rate;
+        const [from] = pair.split('-');
+        const convResult = document.getElementById('conv-result');
+        convResult.textContent = `${fmt(amount)} ${from} = ${fmt(converted)} lei (curs orientativ 1 ${from} = ${rate.toFixed(2)} lei)`;
+        convResult.classList.remove('hidden');
+      });
+    }
+
+    // ---- Toggle sfaturi pentru prezentare ----
+    const toggleTipsBtn = document.getElementById('toggle-tips-btn');
+    if (toggleTipsBtn) {
+      toggleTipsBtn.addEventListener('click', () => {
+        const content = document.getElementById('tips-content');
+        const isHidden = content.classList.contains('hidden');
+        content.classList.toggle('hidden');
+        toggleTipsBtn.textContent = isHidden ? 'ℹ️ Ascunde sfaturile' : 'ℹ️ Arată sfaturi pentru prezentare';
+      });
+    }
+  })();
+
+  /* ======================================================
+     MODUL 5: JURIU
+     3 membri notează 5 criterii (scară 1-5) pentru fiecare echipă.
+     Scorul final = media celor 3 jurați. Clasament persistat local
+     (util când juriul folosește un singur telefon/tabletă la eveniment).
+  ====================================================== */
+  (function initJury() {
+    const membersWrap = document.getElementById('jury-members');
+    if (!membersWrap) return;
+
+    const criteria = [
+      { id: 'prezentare', label: 'Calitatea prezentării' },
+      { id: 'eficienta', label: 'Eficiența afacerii' },
+      { id: 'realism', label: 'Nivelul de realism al implementării' },
+      { id: 'originalitate', label: 'Originalitatea ideii' },
+      { id: 'echipa', label: 'Lucrul în echipă & răspunsuri la întrebări' },
+    ];
+    const SCALE_MAX = 5;
+    const STORAGE_KEY = 'cefca_jury_leaderboard';
+
+    function scoreOptionsHTML() {
+      let html = '<option value="">-</option>';
+      for (let i = 1; i <= SCALE_MAX; i++) html += `<option value="${i}">${i}</option>`;
+      return html;
+    }
+
+    // Randează 3 blocuri de jurat, fiecare cu cele 5 criterii
+    for (let j = 1; j <= 3; j++) {
+      const card = document.createElement('div');
+      card.className = 'card jury-member-card';
+      card.dataset.juror = j;
+      let rows = criteria.map(c => `
+        <div class="jury-criteria-row">
+          <label>${c.label}</label>
+          <select class="jury-score-select" data-criterion="${c.id}">${scoreOptionsHTML()}</select>
+        </div>`).join('');
+      card.innerHTML = `<h3>Jurat ${j}</h3>${rows}<div class="jury-member-total">Total: <span class="juror-total">0</span> / ${criteria.length * SCALE_MAX}</div>`;
+      membersWrap.appendChild(card);
+    }
+
+    membersWrap.addEventListener('change', (e) => {
+      if (!e.target.classList.contains('jury-score-select')) return;
+      const card = e.target.closest('.jury-member-card');
+      const selects = card.querySelectorAll('.jury-score-select');
+      let total = 0;
+      selects.forEach(s => { total += parseInt(s.value, 10) || 0; });
+      card.querySelector('.juror-total').textContent = total;
+    });
+
+    function loadLeaderboard() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+    function saveLeaderboard(list) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) { /* ignore */ }
+    }
+
+    function renderLeaderboard() {
+      const list = loadLeaderboard().sort((a, b) => b.avgScore - a.avgScore);
+      const el = document.getElementById('jury-leaderboard');
+      if (!list.length) {
+        el.innerHTML = '<p class="jury-empty-msg">Nicio echipă evaluată încă.</p>';
+        return;
+      }
+      const maxTotal = criteria.length * SCALE_MAX;
+      el.innerHTML = list.map((entry, idx) => `
+        <div class="jury-leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
+          <span class="jury-rank-badge">${idx + 1}.</span>
+          <span class="jury-team-info">
+            <span class="jury-team-name">${entry.teamName}</span>
+            <span class="jury-team-detail">Jurați: ${entry.jurorTotals.join(' / ')} (din ${maxTotal} fiecare)</span>
+          </span>
+          <span class="jury-score">${entry.avgScore.toFixed(1)}/${maxTotal}</span>
+          <button type="button" class="jury-delete-btn" data-team-id="${entry.id}" aria-label="Șterge echipa">✕</button>
+        </div>`).join('');
+    }
+
+    document.getElementById('jury-leaderboard').addEventListener('click', (e) => {
+      const btn = e.target.closest('.jury-delete-btn');
+      if (!btn) return;
+      const id = btn.dataset.teamId;
+      const list = loadLeaderboard().filter(entry => entry.id !== id);
+      saveLeaderboard(list);
+      renderLeaderboard();
+    });
+
+    function resetForm() {
+      document.getElementById('jury-team-name').value = '';
+      membersWrap.querySelectorAll('.jury-score-select').forEach(s => { s.value = ''; });
+      membersWrap.querySelectorAll('.juror-total').forEach(s => { s.textContent = '0'; });
+    }
+
+    document.getElementById('jury-reset-form-btn').addEventListener('click', resetForm);
+
+    document.getElementById('jury-save-btn').addEventListener('click', () => {
+      const teamName = document.getElementById('jury-team-name').value.trim();
+      if (!teamName) { alert('Te rog completează numele echipei.'); return; }
+
+      const jurorCards = membersWrap.querySelectorAll('.jury-member-card');
+      const jurorTotals = [];
+      let incomplete = false;
+      jurorCards.forEach(card => {
+        const selects = card.querySelectorAll('.jury-score-select');
+        let total = 0;
+        selects.forEach(s => { if (!s.value) incomplete = true; total += parseInt(s.value, 10) || 0; });
+        jurorTotals.push(total);
+      });
+      if (incomplete) { alert('Te rog completează toate criteriile pentru toți cei 3 jurați.'); return; }
+
+      const avgScore = jurorTotals.reduce((a, b) => a + b, 0) / jurorTotals.length;
+      const list = loadLeaderboard();
+      list.push({ id: 'team_' + Date.now(), teamName, jurorTotals, avgScore });
+      saveLeaderboard(list);
+      renderLeaderboard();
+      resetForm();
+      document.getElementById('jury-leaderboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    document.getElementById('jury-clear-all-btn').addEventListener('click', () => {
+      if (!confirm('Ștergi tot clasamentul echipelor? Nu se poate anula.')) return;
+      saveLeaderboard([]);
+      renderLeaderboard();
+    });
+
+    renderLeaderboard();
   })();
 
 });
