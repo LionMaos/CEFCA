@@ -27,29 +27,36 @@
     <button class="menu-card" data-target="view-holland">
       <span class="menu-icon">🧭</span>
       <span class="menu-card-text">
-        <span class="menu-title">Chestionar Holland</span>
+        <span class="menu-title">Modul 1 · Chestionar Holland</span>
         <span class="menu-desc">Descoperă-ți tipul de personalitate profesională și meseriile potrivite</span>
       </span>
     </button>
     <button class="menu-card" data-target="view-expenses">
       <span class="menu-icon">💰</span>
       <span class="menu-card-text">
-        <span class="menu-title">Ierarhia Cheltuielilor</span>
+        <span class="menu-title">Modul 2 · Ierarhia Cheltuielilor</span>
         <span class="menu-desc">Ordonează cheltuielile unei familii după importanță</span>
       </span>
     </button>
     <button class="menu-card" data-target="view-antifraud">
       <span class="menu-icon">🛡️</span>
       <span class="menu-card-text">
-        <span class="menu-title">Decalogul Antifraudă</span>
-        <span class="menu-desc">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare</span>
+        <span class="menu-title">Modul 3 · Decalogul Antifraudă</span>
+        <span class="menu-desc">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții</span>
       </span>
     </button>
     <button class="menu-card" data-target="view-blitz">
       <span class="menu-icon">🚀</span>
       <span class="menu-card-text">
-        <span class="menu-title">Blitz Business</span>
+        <span class="menu-title">Modul 4 · Blitz Business</span>
         <span class="menu-desc">Construiește un plan de afaceri rapid și calculează-ți profitul</span>
+      </span>
+    </button>
+    <button class="menu-card" data-target="view-jury">
+      <span class="menu-icon">⚖️</span>
+      <span class="menu-card-text">
+        <span class="menu-title">Modul 5 · Juriu</span>
+        <span class="menu-desc">Cei 3 membri ai juriului notează echipele care își prezintă afacerea</span>
       </span>
     </button>
   </nav>
@@ -58,7 +65,7 @@
   <section id="view-holland" class="app-view hidden">
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="holland-section">
-      <h2>Chestionar de Interese Profesionale (Holland)</h2>
+      <h2>Modul 1 · Chestionar de Interese Profesionale (Holland)</h2>
       <p class="section-intro">Pentru fiecare activitate/descriere, alegeți simbolul corespunzător: ✔️ pentru „Îmi place", ? pentru „Așa și așa", ❌ pentru „Nu-mi place".</p>
 
       <form id="holland-quiz">
@@ -120,14 +127,14 @@
   <section id="view-expenses" class="app-view hidden">
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="expense-prioritization-section">
-      <h2>Ierarhizează Cheltuielile Familiei</h2>
-      <p class="section-intro">Folosește săgețile ▲ ▼ pentru a ordona lista, de sus (cea mai importantă / obligatorie cheltuială) în jos (cea mai puțin importantă). Fiecare cheltuială are o poziție unică, deci nu pot exista două cheltuieli cu aceeași prioritate.</p>
+      <h2>Modul 2 · Ierarhizează Cheltuielile Familiei</h2>
+      <p class="section-intro">Alege pentru fiecare cheltuială o prioritate de la 1 (cea mai importantă/obligatorie) la 16 (cea mai puțin importantă). Odată aleasă o cifră la o cheltuială, ea dispare din lista celorlalte — deci nu poți aloca aceeași cifră de două ori.</p>
 
       <ol id="expense-list-numeric" class="expense-list-drag card"></ol>
 
       <div class="action-buttons-group">
         <button type="button" id="display-hierarchy-btn" class="main-action-btn display">Compară Ierarhia</button>
-        <button type="button" id="expense-reset-btn" class="secondary-action-btn reset">Amestecă din nou</button>
+        <button type="button" id="expense-reset-btn" class="secondary-action-btn reset">Resetează prioritățile</button>
       </div>
 
       <div id="combined-hierarchy-display" class="hidden card result-card">
@@ -148,9 +155,73 @@
   <section id="view-antifraud" class="app-view hidden">
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="antifraud-section">
-      <h2>Decalogul Antifraudă</h2>
-      <p class="section-intro">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare — 10 întrebări pentru siguranța banilor tăi.</p>
+      <h2>Modul 3 · Decalogul Antifraudă</h2>
+      <p class="section-intro">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții — 13 întrebări pentru siguranța banilor tăi.</p>
       <div id="antifraud-quiz-root"></div>
+
+      <div class="card">
+        <button type="button" id="toggle-protection-btn" class="secondary-action-btn">🛡️ Cum să te protejezi (principii)</button>
+        <div id="protection-content" class="hidden">
+          <details class="tip-accordion" open>
+            <summary>🔒 Protejarea informațiilor personale</summary>
+            <ul>
+              <li>Nu furniza niciodată date personale complete precum CNP, informații de card sau credențiale de banking prin telefon, email sau SMS, indiferent cine le solicită.</li>
+              <li>Pentru a primi bani, doar IBAN-ul este necesar. Niciodată nu oferi număr de card, CVV sau alte detalii sensibile.</li>
+              <li>Nu distribui coduri primite prin SMS sau generate în aplicațiile de autentificare cu nimeni, nici măcar cu persoane care pretind că sunt de la bancă.</li>
+              <li>Banca ta are deja datele tale personale în sistem și nu are nevoie să le solicite din nou.</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>🔔 Verificarea comunicărilor</summary>
+            <ul>
+              <li>Verifică întotdeauna adresa de email a expeditorului. Băncile folosesc doar domenii oficiale.</li>
+              <li>Fii atent la greșelile gramaticale sau de ortografie din mesajele primite — pot indica o fraudă.</li>
+              <li>Dacă primești un apel suspect, închide și sună direct la numărul oficial al băncii pentru verificare.</li>
+              <li>Nu răspunde la comunicări care creează un sentiment de urgență sau panică.</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>📱 Utilizarea sigură a dispozitivelor</summary>
+            <ul>
+              <li>Instalează doar aplicații din surse oficiale (App Store, Google Play) și verifică recenziile și dezvoltatorul.</li>
+              <li>Menține sistemul de operare și aplicațiile actualizate.</li>
+              <li>Nu instala niciodată aplicații de control la distanță (AnyDesk, TeamViewer) la cererea unui apelant.</li>
+              <li>Utilizează un antivirus de încredere și fă verificări periodice.</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>💳 Securizarea conturilor bancare</summary>
+            <ul>
+              <li>Activează notificările pentru toate tranzacțiile.</li>
+              <li>Folosește parole puternice și unice pentru fiecare cont.</li>
+              <li>Activează autentificarea în doi factori peste tot unde e posibil.</li>
+              <li>Verifică periodic extrasele de cont pentru tranzacții neautorizate.</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>🚨 Ce faci dacă ai devenit victima unei fraude</summary>
+            <ol style="padding-left:20px; margin-top:10px;">
+              <li style="margin-bottom:10px;"><strong>Contactează imediat banca</strong> — sună la numărul oficial de pe spatele cardului. Timpul este esențial.</li>
+              <li style="margin-bottom:10px;"><strong>Schimbă-ți toate parolele</strong> — conturi bancare, email, rețele sociale, de pe un dispozitiv sigur.</li>
+              <li style="margin-bottom:10px;"><strong>Documentează incidentul</strong> — salvează mesajele/emailurile, notează data, ora și ce informații ai oferit.</li>
+              <li style="margin-bottom:10px;"><strong>Depune plângere la poliție</strong> — obține o copie, poate fi necesară pentru contestarea tranzacțiilor.</li>
+              <li><strong>Monitorizează-ți conturile</strong> — verifică frecvent, în perioada următoare, orice activitate suspectă.</li>
+            </ol>
+          </details>
+        </div>
+      </div>
+
+      <div class="card">
+        <button type="button" id="toggle-resources-btn" class="secondary-action-btn">📞 Unde anunți o fraudă</button>
+        <div id="resources-content" class="hidden">
+          <ul style="padding-left:20px; margin-top:10px;">
+            <li style="margin-bottom:10px;"><strong>Banca ta</strong> — sună imediat la numărul de urgență de pe spatele cardului sau din aplicația de mobile banking.</li>
+            <li style="margin-bottom:10px;"><strong>Poliția Română</strong> — Serviciul de Combatere a Criminalității Informatice (te poți prezenta la orice secție sau suna la 112 dacă frauda e în desfășurare).</li>
+            <li style="margin-bottom:10px;"><strong>CERT-RO</strong> (Centrul Național de Răspuns la Incidente de Securitate Cibernetică) — linie telefonică <strong>0800-800-358</strong>, email <a href="mailto:raportare@cert.ro">raportare@cert.ro</a>, sau online la <a href="https://www.cert.ro/raportare-incidente" target="_blank" rel="noopener noreferrer">cert.ro/raportare-incidente</a>.</li>
+            <li><strong>ANPC</strong> — dacă frauda vine de la un comerciant/magazin online, pentru reclamații privind servicii financiar-bancare.</li>
+          </ul>
+        </div>
+      </div>
     </section>
   </section>
 
@@ -158,7 +229,7 @@
   <section id="view-blitz" class="app-view hidden">
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="blitz-section">
-      <h2>Blitz Business</h2>
+      <h2>Modul 4 · Blitz Business</h2>
       <p class="section-intro">Construiește rapid un plan de afaceri: pornește de la un capital inițial, adaugă cheltuielile și veniturile, apoi vezi automat profitul echipei tale.</p>
 
       <div class="card">
@@ -169,6 +240,74 @@
           <label class="row-full">Domeniul de activitate<input type="text" id="biz-category" placeholder="Ex: Alimentație, IT, Servicii, etc."></label>
           <label class="row-full">Descriere<input type="text" id="biz-description" placeholder="Descrie afacerea ta în câteva cuvinte..."></label>
           <label>Capital inițial (lei)<input type="number" id="biz-capital" min="0" placeholder="ex: 200"></label>
+        </div>
+        <div class="currency-converter">
+          <h4>💱 Convertor valutar (pentru capital)</h4>
+          <p class="converter-hint">Ai capitalul în altă monedă? Convertește-l în lei și folosește rezultatul mai sus.</p>
+          <div class="converter-row">
+            <input type="number" id="conv-amount" min="0" step="0.01" placeholder="Sumă">
+            <select id="conv-pair">
+              <option value="EUR-RON">EUR → RON</option>
+              <option value="USD-RON">USD → RON</option>
+            </select>
+            <button type="button" id="conv-btn" class="secondary-action-btn">Convertește</button>
+          </div>
+          <div id="conv-result" class="converter-result hidden"></div>
+        </div>
+      </div>
+
+      <div class="card presentation-tips-card">
+        <button type="button" id="toggle-tips-btn" class="secondary-action-btn">ℹ️ Arată sfaturi pentru prezentare</button>
+        <div id="tips-content" class="hidden">
+          <h3 style="margin-top:18px;">Sfaturi pentru prezentarea planului de afaceri</h3>
+          <p class="section-intro" style="margin-bottom:14px;">Recomandări pentru o prezentare eficientă în fața juriului</p>
+          <details class="tip-accordion" open>
+            <summary>🗣️ Tehnici de prezentare</summary>
+            <ul>
+              <li>Vorbește clar, încet și suficient de tare pentru ca toată lumea să te audă</li>
+              <li>Menține contactul vizual cu audiența</li>
+              <li>Folosește un limbaj simplu, evită termenii tehnici sau explică-i când îi folosești</li>
+              <li>Structurează prezentarea: introducere, detalii, concluzie</li>
+              <li>Limitează-te la 5-7 minute pentru întreaga prezentare</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>💡 Introducerea afacerii</summary>
+            <ul>
+              <li>Începe cu un speech concis (30-60 secunde) care explică ideea de bază a afacerii</li>
+              <li>Prezintă numele afacerii și ce oferă (produse sau servicii)</li>
+              <li>Explică ce problemă rezolvă afacerea ta și de ce ai ales această idee</li>
+              <li>Menționează cui se adresează produsele/serviciile tale (grupul țintă)</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>📄 Prezentarea bugetului</summary>
+            <ul>
+              <li>Explică clar principalele categorii de cheltuieli și de ce sunt necesare</li>
+              <li>Detaliază sursele de venit și cum ai estimat prețurile și cantitățile</li>
+              <li>Menționează profitul estimat și cum planifici să îl reinvestești</li>
+              <li>Fii pregătit să explici orice cifră din bugetul tău</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>👥 Echipa și resursele</summary>
+            <ul>
+              <li>Prezintă membrii echipei și care sunt responsabilitățile fiecăruia</li>
+              <li>Explică ce resurse aveți deja și ce resurse va trebui să obțineți</li>
+              <li>Menționează partenerii potențiali sau furnizorii cu care veți colabora</li>
+              <li>Descrie spațiul în care veți opera (dacă este cazul)</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>🏆 Finalizarea prezentării</summary>
+            <ul>
+              <li>Rezumă punctele principale ale planului tău de afaceri</li>
+              <li>Subliniază de ce crezi că afacerea ta va avea succes</li>
+              <li>Menționează planurile de viitor și potențialul de dezvoltare</li>
+              <li>Mulțumește pentru atenție și întreabă dacă sunt întrebări</li>
+              <li>Pregătește-te pentru întrebări dificile și răspunde sincer</li>
+            </ul>
+          </details>
         </div>
       </div>
 
@@ -191,6 +330,35 @@
       </div>
 
       <div id="blitz-result" class="hidden card result-card"></div>
+    </section>
+  </section>
+
+  <!-- ================= JURIU ================= -->
+  <section id="view-jury" class="app-view hidden">
+    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <section id="jury-section">
+      <h2>Modul 5 · Juriu</h2>
+      <p class="section-intro">Cei 3 membri ai juriului notează, pentru fiecare echipă care își prezintă afacerea, 5 criterii pe o scară de la 1 la 5. Scorul final e media celor 3 jurați.</p>
+
+      <div class="card">
+        <h3>Echipa evaluată</h3>
+        <div class="form-grid">
+          <label class="row-full">Numele echipei<input type="text" id="jury-team-name" placeholder="Ex: Echipa Vulturii"></label>
+        </div>
+      </div>
+
+      <div id="jury-members" class="jury-members-wrap"></div>
+
+      <div class="action-buttons-group">
+        <button type="button" id="jury-save-btn" class="main-action-btn calculate">Salvează Evaluarea</button>
+        <button type="button" id="jury-reset-form-btn" class="secondary-action-btn reset">Golește Formularul</button>
+      </div>
+
+      <div class="card">
+        <h3>🏆 Clasament Echipe</h3>
+        <div id="jury-leaderboard"></div>
+        <button type="button" id="jury-clear-all-btn" class="secondary-action-btn reset" style="margin-top:14px;">Șterge tot clasamentul</button>
+      </div>
     </section>
   </section>
 
