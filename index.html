@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEFCA - Carieră, Educație Financiară, Creativitate în Afaceri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <header class="app-header">
+    <div class="logo-container">
+      <img src="logo.jpg" alt="Logo CEFCA" class="app-logo">
+      <p class="author-credit top-credit">by prof. Marius Simina</p>
+    </div>
+    <h1 class="app-title">CEFCA – Micro Curs Interactiv</h1>
+    <p class="section-intro">Carieră, Educație Financiară, Creativitate în Afaceri</p>
+  </header>
+
+  <!-- ================= MENIU PRINCIPAL ================= -->
+  <nav id="main-menu" class="menu-grid">
+    <button class="menu-card" data-target="view-holland">
+      <span class="menu-icon">🧭</span>
+      <span class="menu-card-text">
+        <span class="menu-title">Chestionar Holland</span>
+        <span class="menu-desc">Descoperă-ți tipul de personalitate profesională și meseriile potrivite</span>
+      </span>
+    </button>
+    <button class="menu-card" data-target="view-expenses">
+      <span class="menu-icon">💰</span>
+      <span class="menu-card-text">
+        <span class="menu-title">Ierarhia Cheltuielilor</span>
+        <span class="menu-desc">Ordonează cheltuielile unei familii după importanță</span>
+      </span>
+    </button>
+    <button class="menu-card" data-target="view-antifraud">
+      <span class="menu-icon">🛡️</span>
+      <span class="menu-card-text">
+        <span class="menu-title">Decalogul Antifraudă</span>
+        <span class="menu-desc">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare</span>
+      </span>
+    </button>
+    <button class="menu-card" data-target="view-blitz">
+      <span class="menu-icon">🚀</span>
+      <span class="menu-card-text">
+        <span class="menu-title">Blitz Business</span>
+        <span class="menu-desc">Construiește un plan de afaceri rapid și calculează-ți profitul</span>
+      </span>
+    </button>
+  </nav>
+
+  <!-- ================= HOLLAND ================= -->
+  <section id="view-holland" class="app-view hidden">
+    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <section id="holland-section">
+      <h2>Chestionar de Interese Profesionale (Holland)</h2>
+      <p class="section-intro">Pentru fiecare activitate/descriere, alegeți simbolul corespunzător: ✔️ pentru „Îmi place", ? pentru „Așa și așa", ❌ pentru „Nu-mi place".</p>
+
+      <form id="holland-quiz">
+        <h3>Tipul REALIST (R)</h3>
+        <div class="question-group card" data-type="R" data-question-id="q1"><p>1. Îmi place să repar obiecte mecanice sau electronice (ex: mașină, bicicletă, calculator).</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="R" data-question-id="q2"><p>2. Prefer activitățile care se desfășoară în aer liber (ex: drumeții, grădinărit, sporturi).</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="R" data-question-id="q3"><p>3. Mă pricep să lucrez cu unelte, scule sau diverse mașini și utilaje.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="R" data-question-id="q4"><p>4. Îmi place să asamblez sau să construiesc diverse lucruri (machete, mobilier, structuri simple).</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="R" data-question-id="q5"><p>5. Prefer activitățile practice unde pot vedea un rezultat concret al muncii mele.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+
+        <h3>Tipul INVESTIGATIV (I)</h3>
+        <div class="question-group card" data-type="I" data-question-id="q6"><p>6. Îmi place să rezolv probleme abstracte, puzzle-uri logice sau matematice.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="I" data-question-id="q7"><p>7. Sunt o persoană curioasă, îmi pun întrebări despre cum și de ce funcționează lucrurile.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="I" data-question-id="q8"><p>8. Îmi place să fac cercetare, să adun informații și să analizez date sau fapte.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="I" data-question-id="q9"><p>9. Prefer să lucrez independent la sarcini care necesită concentrare și gândire.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="I" data-question-id="q10"><p>10. Îmi place să citesc articole științifice, tehnice sau cărți de non-ficțiune complexă.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+
+        <h3>Tipul ARTISTIC (A)</h3>
+        <div class="question-group card" data-type="A" data-question-id="q11"><p>11. Am o imaginație bogată și îmi place să generez idei noi sau neconvenționale.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="A" data-question-id="q12"><p>12. Îmi place să mă exprim prin muzică, scris, desen, pictură, dans sau actorie.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="A" data-question-id="q13"><p>13. Prefer activitățile flexibile, fără structuri sau reguli rigide.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="A" data-question-id="q14"><p>14. Sunt atras(ă) de design, estetică și frumos în general.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="A" data-question-id="q15"><p>15. Îmi place să vin cu soluții creative sau abordări inedite la probleme.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+
+        <h3>Tipul SOCIAL (S)</h3>
+        <div class="question-group card" data-type="S" data-question-id="q16"><p>16. Îmi place să ajut oamenii, să îi consiliez sau să îi învăț lucruri noi.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="S" data-question-id="q17"><p>17. Sunt o persoană cooperantă și comunicativă, îmi place să lucrez în echipă.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="S" data-question-id="q18"><p>18. Mă implic cu plăcere în activități comunitare sau acțiuni de voluntariat.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="S" data-question-id="q19"><p>19. Am abilități de a asculta și de a înțelege problemele altora.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="S" data-question-id="q20"><p>20. Îmi place să organizez activități de grup, petreceri sau evenimente sociale.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+
+        <h3>Tipul ÎNTREPRINZĂTOR (E)</h3>
+        <div class="question-group card" data-type="E" data-question-id="q21"><p>21. Îmi place să inițiez și să conduc proiecte sau echipe.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="E" data-question-id="q22"><p>22. Sunt o persoană ambițioasă și competitivă, îmi asum riscuri calculate.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="E" data-question-id="q23"><p>23. Am abilități de persuasiune, îmi place să vând produse sau să promovez idei.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="E" data-question-id="q24"><p>24. Sunt interesat(ă) de afaceri, management și oportunități financiare.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="E" data-question-id="q25"><p>25. Îmi place să vorbesc în public și să susțin prezentări.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+
+        <h3>Tipul CONVENȚIONAL (C)</h3>
+        <div class="question-group card" data-type="C" data-question-id="q26"><p>26. Prefer sarcinile clare, bine definite și activitățile de rutină predictibile.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="C" data-question-id="q27"><p>27. Sunt o persoană organizată, meticuloasă și atentă la detalii.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="C" data-question-id="q28"><p>28. Îmi place să lucrez cu cifre, date, să fac calcule sau să gestionez bugete.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="C" data-question-id="q29"><p>29. Prefer să urmez reguli și proceduri stabilite la locul de muncă.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+        <div class="question-group card" data-type="C" data-question-id="q30"><p>30. Îmi place să organizez informații, fișiere sau spații de lucru.</p><div class="rating-buttons"><button type="button" class="rating-btn like" data-value="like" title="Îmi place">✔️</button><button type="button" class="rating-btn indifferent" data-value="indifferent" title="Așa și așa">?</button><button type="button" class="rating-btn dislike" data-value="dislike" title="Nu-mi place">❌</button></div></div>
+
+        <div id="holland-validation-errors" class="validation-errors hidden"></div>
+        <div class="action-buttons-group">
+          <button type="button" id="holland-calculate-btn" class="main-action-btn calculate">Calculează Scorul</button>
+          <button type="button" id="holland-reset-btn" class="secondary-action-btn reset">Resetează</button>
+        </div>
+      </form>
+      <div id="result" class="hidden card">
+        <button type="button" id="back-to-holland-top-btn" class="tertiary-action-btn back-to-top hidden">↑ Înapoi la chestionar</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ================= IERARHIA CHELTUIELILOR ================= -->
+  <section id="view-expenses" class="app-view hidden">
+    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <section id="expense-prioritization-section">
+      <h2>Ierarhizează Cheltuielile Familiei</h2>
+      <p class="section-intro">Folosește săgețile ▲ ▼ pentru a ordona lista, de sus (cea mai importantă / obligatorie cheltuială) în jos (cea mai puțin importantă). Fiecare cheltuială are o poziție unică, deci nu pot exista două cheltuieli cu aceeași prioritate.</p>
+
+      <ol id="expense-list-numeric" class="expense-list-drag card"></ol>
+
+      <div class="action-buttons-group">
+        <button type="button" id="display-hierarchy-btn" class="main-action-btn display">Compară Ierarhia</button>
+        <button type="button" id="expense-reset-btn" class="secondary-action-btn reset">Amestecă din nou</button>
+      </div>
+
+      <div id="combined-hierarchy-display" class="hidden card result-card">
+        <h3>Comparație Ierarhizare (Corect vs. Răspunsul Tău)</h3>
+        <div class="list-legend">
+          <span>Ordine Corectă & Cheltuială</span>
+          <span>Poziția Ta</span>
+        </div>
+        <ol id="combined-hierarchy-list" class="combined-hierarchy-list"></ol>
+        <p id="all-correct-message" class="hidden success-message">Felicitări! Toate prioritățile corespund.</p>
+        <p id="partial-success-message" class="hidden partial-success-message"></p>
+        <button type="button" id="back-to-expenses-top-btn" class="tertiary-action-btn back-to-top hidden">↑ Înapoi la listă</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ================= DECALOGUL ANTIFRAUDĂ ================= -->
+  <section id="view-antifraud" class="app-view hidden">
+    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <section id="antifraud-section">
+      <h2>Decalogul Antifraudă</h2>
+      <p class="section-intro">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare — 10 întrebări pentru siguranța banilor tăi.</p>
+      <div id="antifraud-quiz-root"></div>
+    </section>
+  </section>
+
+  <!-- ================= BLITZ BUSINESS ================= -->
+  <section id="view-blitz" class="app-view hidden">
+    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <section id="blitz-section">
+      <h2>Blitz Business</h2>
+      <p class="section-intro">Construiește rapid un plan de afaceri: pornește de la un capital inițial, adaugă cheltuielile și veniturile, apoi vezi automat profitul echipei tale.</p>
+
+      <div class="card">
+        <h3>1. Afacerea ta</h3>
+        <div class="form-grid">
+          <label>Denumirea afacerii<input type="text" id="biz-name" placeholder="Ex: Patiseria Ana"></label>
+          <label>Numele proprietarului<input type="text" id="biz-owner" placeholder="Ex: Ana Popescu"></label>
+          <label class="row-full">Domeniul de activitate<input type="text" id="biz-category" placeholder="Ex: Alimentație, IT, Servicii, etc."></label>
+          <label class="row-full">Descriere<input type="text" id="biz-description" placeholder="Descrie afacerea ta în câteva cuvinte..."></label>
+          <label>Capital inițial (lei)<input type="number" id="biz-capital" min="0" placeholder="ex: 200"></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>2. Cheltuieli</h3>
+        <div id="expense-rows" class="rows-list"></div>
+        <button type="button" id="add-expense-row" class="secondary-action-btn add-row">+ Adaugă cheltuială</button>
+      </div>
+
+      <div class="card">
+        <h3>3. Produse / Servicii (Venituri)</h3>
+        <div id="product-rows" class="rows-list"></div>
+        <button type="button" id="add-product-row" class="secondary-action-btn add-row">+ Adaugă produs/serviciu</button>
+      </div>
+
+      <div class="action-buttons-group">
+        <button type="button" id="blitz-calculate-btn" class="main-action-btn calculate">Calculează Sumarul Financiar</button>
+        <button type="button" id="blitz-save-btn" class="secondary-action-btn">💾 Salvează pe acest telefon</button>
+        <button type="button" id="blitz-reset-btn" class="secondary-action-btn reset">Resetează</button>
+      </div>
+
+      <div id="blitz-result" class="hidden card result-card"></div>
+    </section>
+  </section>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
