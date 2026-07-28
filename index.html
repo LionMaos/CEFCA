@@ -337,10 +337,21 @@
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="jury-section">
       <h2>Modul 5 · Juriu</h2>
-      <p class="section-intro">Fiecare dintre cei 3 jurați notează separat echipa, pe propriul ecran, 5 criterii pe o scară de la 1 la 5. Scorul final e media celor 3 evaluări. (Nimic nu se salvează pe telefon — datele există doar cât timp pagina rămâne deschisă.)</p>
+      <p class="section-intro">Fiecare dintre cei 3 jurați notează separat echipa, de pe propriul telefon, 5 criterii pe o scară de la 1 la 5. Scorurile se sincronizează live între toate telefoanele conectate — jurații pot nota chiar în același timp. Scorul final e media evaluărilor.</p>
+
+      <!-- ECRAN 0: cod de acces (PIN) — obligatoriu înainte de orice notare -->
+      <div id="jury-pin-view" class="card">
+        <h3>Cod de acces juriu</h3>
+        <p class="section-intro" style="margin-bottom:14px;">Introdu codul primit de la organizator, ca să poți nota echipele.</p>
+        <div class="form-grid">
+          <label class="row-full">Cod de acces<input type="password" id="jury-pin-input" placeholder="Cod"></label>
+        </div>
+        <p id="jury-pin-error" class="hidden" style="color:var(--danger-color); font-weight:600; margin-top:8px;">Cod greșit. Încearcă din nou.</p>
+        <button type="button" id="jury-pin-submit-btn" class="main-action-btn calculate" style="margin-top:14px;">Continuă</button>
+      </div>
 
       <!-- ECRAN A: alegere/creare echipă -->
-      <div id="jury-team-select-view" class="card">
+      <div id="jury-team-select-view" class="card hidden">
         <h3>Echipa evaluată</h3>
         <div class="form-grid">
           <label class="row-full">Numele echipei<input type="text" id="jury-team-name" placeholder="Ex: Echipa Vulturii"></label>
@@ -379,6 +390,22 @@
 
 </div>
 
+<!-- Firebase (folosit doar de Modulul 5 - Juriu, pentru sincronizare live între telefoane) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_xHS4Rd4uW8r0-25BptrOV5PPAeeKVLk",
+    authDomain: "cefca-juriu.firebaseapp.com",
+    databaseURL: "https://cefca-juriu-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cefca-juriu",
+    storageBucket: "cefca-juriu.firebasestorage.app",
+    messagingSenderId: "78388676079",
+    appId: "1:78388676079:web:4df53d8852f191b209a21a"
+  };
+  try { firebase.initializeApp(firebaseConfig); } catch (e) { console.error('Firebase init failed', e); }
+</script>
 <script src="script.js"></script>
 </body>
 </html>
