@@ -709,18 +709,21 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   /* ======================================================
-     MODUL 5: JURIU
-     Fiecare din cei 3 jurați notează SEPARAT, pe propriul ecran de completare,
-     5 criterii (scară 1-5). Scorul final al echipei = media celor 3 jurați.
-     Totul e păstrat doar în memorie (nimic nu se salvează pe telefon) —
-     se pierde dacă pagina e reîncărcată, deci juriul ține pagina deschisă
-     pe durata evenimentului.
+     MODUL 5: JURIU (sincronizat live prin Firebase Realtime Database)
+     Fiecare din cei 3 jurați notează SEPARAT, pe propriul telefon, pe propriul
+     ecran de completare, 5 criterii (scară 1-5). Scorurile se scriu direct în
+     Firebase, deci toate telefoanele conectate văd clasamentul actualizat live,
+     în timp real, indiferent cine a notat de pe care dispozitiv.
   ====================================================== */
   (function initJury() {
+    const pinView = document.getElementById('jury-pin-view');
     const selectView = document.getElementById('jury-team-select-view');
-    if (!selectView) return;
+    if (!pinView || !selectView) return;
     const statusView = document.getElementById('jury-team-status-view');
     const scoringView = document.getElementById('jury-scoring-view');
+
+    // Codul de acces pentru juriu — schimbă-l aici dacă vrei alt cod.
+    const JURY_PIN = 'CEFCA2026';
 
     const criteria = [
       { id: 'prezentare', label: 'Calitatea prezentării' },
@@ -732,41 +735,88 @@ document.addEventListener('DOMContentLoaded', () => {
     const SCALE_MAX = 5;
     const MAX_TOTAL = criteria.length * SCALE_MAX;
 
-    const teams = {};   // { numeEchipa: { 1: total|null, 2: total|null, 3: total|null } }
-    let currentTeam = null;
-    let scoringJuror = null; // 1, 2 sau 3 — juratul care completează acum
+    if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+      document.getElementById('jury-section').insertAdjacentHTML('afterbegin',
+        '<div class="validation-errors">⚠️ Modulul de Juriu are nevoie de conexiune la internet ca să sincronizeze notele între telefoane. Verifică conexiunea și reîncarcă pagina.</div>');
+      return;
+    }
 
+    let db = null;
+    let juryRootRef = null;
+    let currentTeam = null;     // numele afișat, ales de utilizator
+    let currentKey = null;      // versiunea „sigură" a numelui, folosită ca și cheie Firebase
+    let currentTeamRef = null;
+    let currentTeamListener = null;
+    let scoringJuror = null;    // 1, 2 sau 3 — juratul care completează acum
+    let latestTeamData = {};    // ultima stare primită de la Firebase pentru echipa curentă
+
+    function sanitizeKey(name) {
+      return name.replace(/[.#$\[\]/]/g, '_').trim();
+    }
     function scoreOptionsHTML() {
       let html = '<option value="">-</option>';
       for (let i = 1; i <= SCALE_MAX; i++) html += `<option value="${i}">${i}</option>`;
       return html;
     }
-
     function showOnly(view) {
-      [selectView, statusView, scoringView].forEach(v => v.classList.add('hidden'));
+      [pinView, selectView, statusView, scoringView].forEach(v => v.classList.add('hidden'));
       view.classList.remove('hidden');
     }
+
+    // ---- ECRAN 0: cod de acces + autentificare anonimă Firebase ----
+    document.getElementById('jury-pin-submit-btn').addEventListener('click', () => {
+      const entered = document.getElementById('jury-pin-input').value.trim();
+      const errorEl = document.getElementById('jury-pin-error');
+      if (entered !== JURY_PIN) {
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      errorEl.classList.add('hidden');
+
+      firebase.auth().signInAnonymously()
+        .then(() => {
+          db = firebase.database();
+          juryRootRef = db.ref('jury');
+          attachLeaderboardListener();
+          showOnly(selectView);
+        })
+        .catch(() => {
+          errorEl.textContent = 'Nu ne-am putut conecta (verifică internetul) — încearcă din nou.';
+          errorEl.classList.remove('hidden');
+        });
+    });
 
     // ---- ECRAN A: alege/creează echipa ----
     document.getElementById('jury-select-team-btn').addEventListener('click', () => {
       const name = document.getElementById('jury-team-name').value.trim();
       if (!name) { alert('Te rog completează numele echipei.'); return; }
-      if (!teams[name]) teams[name] = { 1: null, 2: null, 3: null };
+
       currentTeam = name;
+      currentKey = sanitizeKey(name);
+      if (currentTeamRef && currentTeamListener) currentTeamRef.off('value', currentTeamListener);
+
+      currentTeamRef = juryRootRef.child(currentKey);
+      currentTeamRef.child('name').set(currentTeam);
+      currentTeamListener = currentTeamRef.on('value', (snap) => {
+        latestTeamData = snap.val() || {};
+        if (!statusView.classList.contains('hidden')) renderStatusView();
+      });
+
       renderStatusView();
       showOnly(statusView);
     });
 
-    // ---- ECRAN B: status echipă + 3 butoane separate ----
+    // ---- ECRAN B: status echipă + 3 butoane separate (live, din Firebase) ----
     function renderStatusView() {
       document.getElementById('jury-current-team-title').textContent = `Echipa: ${currentTeam}`;
       const wrap = document.getElementById('jury-juror-status-list');
-      const scores = teams[currentTeam];
+      const scores = latestTeamData.scores || {};
       wrap.innerHTML = [1, 2, 3].map(j => {
-        const done = scores[j] !== null;
+        const val = scores[j];
+        const done = val !== undefined && val !== null;
         return `
         <div class="jury-criteria-row">
-          <label>Jurat ${j} ${done ? `— ✅ ${scores[j]}/${MAX_TOTAL}` : '— ⏳ neevaluat'}</label>
+          <label>Jurat ${j} ${done ? `— ✅ ${val}/${MAX_TOTAL}` : '— ⏳ neevaluat'}</label>
           <button type="button" class="secondary-action-btn jury-juror-btn" data-juror="${j}" style="min-width:120px;">${done ? 'Refă evaluarea' : 'Completează'}</button>
         </div>`;
       }).join('');
@@ -779,7 +829,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('jury-change-team-btn').addEventListener('click', () => {
-      currentTeam = null;
+      if (currentTeamRef && currentTeamListener) currentTeamRef.off('value', currentTeamListener);
+      currentTeam = null; currentKey = null; currentTeamRef = null; currentTeamListener = null;
       document.getElementById('jury-team-name').value = '';
       showOnly(selectView);
     });
@@ -807,21 +858,23 @@ document.addEventListener('DOMContentLoaded', () => {
       selects.forEach(s => { if (!s.value) incomplete = true; total += parseInt(s.value, 10) || 0; });
       if (incomplete) { alert('Te rog completează toate cele 5 criterii înainte de a trimite.'); return; }
 
-      teams[currentTeam][scoringJuror] = total;
-      renderStatusView();
-      renderLeaderboard();
-      showOnly(statusView);
+      currentTeamRef.child('scores/' + scoringJuror).set(total)
+        .then(() => showOnly(statusView))
+        .catch(() => { alert('Nu s-a putut trimite evaluarea — verifică conexiunea la internet și încearcă din nou.'); });
     });
 
-    // ---- CLASAMENT ----
-    function renderLeaderboard() {
-      const evaluated = Object.entries(teams)
-        .map(([name, s]) => {
-          const scored = [1, 2, 3].filter(j => s[j] !== null);
+    // ---- CLASAMENT (live, din Firebase — vede notele de pe toate telefoanele) ----
+    function attachLeaderboardListener() {
+      juryRootRef.on('value', (snap) => {
+      const allTeams = snap.val() || {};
+      const evaluated = Object.values(allTeams)
+        .map((teamData) => {
+          const scores = teamData.scores || {};
+          const scored = [1, 2, 3].filter(j => scores[j] !== undefined && scores[j] !== null);
           if (!scored.length) return null;
-          const totals = scored.map(j => s[j]);
+          const totals = scored.map(j => scores[j]);
           const avgScore = totals.reduce((a, b) => a + b, 0) / totals.length;
-          return { name, s, scoredCount: scored.length, avgScore };
+          return { name: teamData.name, scores, scoredCount: scored.length, avgScore };
         })
         .filter(Boolean)
         .sort((a, b) => b.avgScore - a.avgScore);
@@ -832,7 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       el.innerHTML = evaluated.map((entry, idx) => {
-        const detail = [1, 2, 3].map(j => entry.s[j] === null ? '—' : entry.s[j]).join(' / ');
+        const detail = [1, 2, 3].map(j => (entry.scores[j] === undefined || entry.scores[j] === null) ? '—' : entry.scores[j]).join(' / ');
         const partialNote = entry.scoredCount < 3 ? ` · scor parțial (${entry.scoredCount}/3 jurați)` : '';
         return `
         <div class="jury-leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
@@ -844,9 +897,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="jury-score">${entry.avgScore.toFixed(1)}/${MAX_TOTAL}</span>
         </div>`;
       }).join('');
+      });
     }
-
-    renderLeaderboard();
   })();
 
 });
