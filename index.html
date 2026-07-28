@@ -156,7 +156,7 @@
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="antifraud-section">
       <h2>Modul 3 · Decalogul Antifraudă</h2>
-      <p class="section-intro">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții — 13 întrebări pentru siguranța banilor tăi.</p>
+      <p class="section-intro">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții — 10 întrebări pentru siguranța banilor tăi.</p>
       <div id="antifraud-quiz-root"></div>
 
       <div class="card">
@@ -243,7 +243,7 @@
         </div>
         <div class="currency-converter">
           <h4>💱 Convertor valutar (pentru capital)</h4>
-          <p class="converter-hint">Ai capitalul în altă monedă? Convertește-l în lei și folosește rezultatul mai sus.</p>
+          <p class="converter-hint">Folosește cursul zilei publicat de Banca Națională a României (BNR). Ai capitalul în altă monedă? Convertește-l în lei și folosește rezultatul mai sus.</p>
           <div class="converter-row">
             <input type="number" id="conv-amount" min="0" step="0.01" placeholder="Sumă">
             <select id="conv-pair">
@@ -325,7 +325,6 @@
 
       <div class="action-buttons-group">
         <button type="button" id="blitz-calculate-btn" class="main-action-btn calculate">Calculează Sumarul Financiar</button>
-        <button type="button" id="blitz-save-btn" class="secondary-action-btn">💾 Salvează pe acest telefon</button>
         <button type="button" id="blitz-reset-btn" class="secondary-action-btn reset">Resetează</button>
       </div>
 
@@ -338,26 +337,42 @@
     <button class="back-btn" data-back>← Înapoi la meniu</button>
     <section id="jury-section">
       <h2>Modul 5 · Juriu</h2>
-      <p class="section-intro">Cei 3 membri ai juriului notează, pentru fiecare echipă care își prezintă afacerea, 5 criterii pe o scară de la 1 la 5. Scorul final e media celor 3 jurați.</p>
+      <p class="section-intro">Fiecare dintre cei 3 jurați notează separat echipa, pe propriul ecran, 5 criterii pe o scară de la 1 la 5. Scorul final e media celor 3 evaluări. (Nimic nu se salvează pe telefon — datele există doar cât timp pagina rămâne deschisă.)</p>
 
-      <div class="card">
+      <!-- ECRAN A: alegere/creare echipă -->
+      <div id="jury-team-select-view" class="card">
         <h3>Echipa evaluată</h3>
         <div class="form-grid">
           <label class="row-full">Numele echipei<input type="text" id="jury-team-name" placeholder="Ex: Echipa Vulturii"></label>
         </div>
+        <button type="button" id="jury-select-team-btn" class="main-action-btn calculate" style="margin-top:14px;">Continuă cu această echipă</button>
       </div>
 
-      <div id="jury-members" class="jury-members-wrap"></div>
+      <!-- ECRAN B: status echipă curentă + buton separat per jurat -->
+      <div id="jury-team-status-view" class="hidden">
+        <div class="card">
+          <h3 id="jury-current-team-title">Echipa</h3>
+          <div id="jury-juror-status-list"></div>
+          <button type="button" id="jury-change-team-btn" class="secondary-action-btn" style="margin-top:14px;">↺ Altă echipă</button>
+        </div>
+      </div>
 
-      <div class="action-buttons-group">
-        <button type="button" id="jury-save-btn" class="main-action-btn calculate">Salvează Evaluarea</button>
-        <button type="button" id="jury-reset-form-btn" class="secondary-action-btn reset">Golește Formularul</button>
+      <!-- ECRAN C: formular de notare pentru UN singur jurat -->
+      <div id="jury-scoring-view" class="hidden">
+        <div class="card">
+          <h3 id="jury-scoring-title">Jurat</h3>
+          <div id="jury-scoring-criteria"></div>
+          <div class="action-buttons-group">
+            <button type="button" id="jury-submit-score-btn" class="main-action-btn calculate">Trimite Evaluarea</button>
+            <button type="button" id="jury-cancel-score-btn" class="secondary-action-btn">Anulează</button>
+          </div>
+        </div>
       </div>
 
       <div class="card">
         <h3>🏆 Clasament Echipe</h3>
+        <p class="section-intro" style="margin-bottom:10px;">Media se calculează din câți jurați au apucat să noteze (chiar dacă nu sunt toți 3).</p>
         <div id="jury-leaderboard"></div>
-        <button type="button" id="jury-clear-all-btn" class="secondary-action-btn reset" style="margin-top:14px;">Șterge tot clasamentul</button>
       </div>
     </section>
   </section>
