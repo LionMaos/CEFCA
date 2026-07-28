@@ -344,9 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
       { category: 'Magazin online fals', question: 'Găsești un magazin online care vinde un iPhone la doar 200 de lei. Ce te-ar face să bănuiești o țeapă?',
         options: ['Are multe recenzii pozitive', 'Acceptă plata doar prin transfer bancar sau criptomonede, nu și cu cardul sau ramburs', 'Are un design de site foarte profesionist', 'Oferă livrare gratuită'],
         correctAnswer: 1, explanation: 'Magazinele frauduloase oferă prețuri nerealiste și acceptă doar metode de plată ireversibile (transfer bancar, cripto). Un site legitim oferă multiple opțiuni de plată (card, ramburs). Recenziile pot fi false, iar designul poate fi copiat de pe site-uri reale.' },
-      { category: 'SIM Swapping', question: 'Din senin, telefonul tău rămâne fără semnal și nu mai poți primi apeluri sau SMS-uri. Ce ar trebui să faci?',
-        options: ['Aștept câteva ore, probabil e o problemă de rețea', 'Sun imediat operatorul, de pe alt telefon — cineva ar fi putut să-mi preia numărul pe o altă cartelă SIM', 'Repornesc telefonul și aștept', 'Mă conectez la Wi-Fi și intru normal în aplicația băncii'],
-        correctAnswer: 1, explanation: 'Atacul SIM Swapping presupune că fraudatorul convinge operatorul de telefonie să transfere numărul tău pe o altă cartelă SIM. Astfel, primește el SMS-urile de confirmare bancară. Dacă pierzi brusc semnalul, contactează imediat operatorul și banca!' },
       { category: 'Money mule', question: 'Cineva cunoscut online îți propune o „afacere": banii lui trec prin contul tău, iar tu păstrezi o parte drept comision. Ce faci?',
         options: ['Accept, pare un mod ușor de a face bani', 'Refuz — banii care trec fără motiv real prin contul meu ar putea fi din fraude, iar eu aș răspunde pentru asta', 'Accept, dar doar dacă suma e mică', 'Cer un contract semnat înainte'],
         correctAnswer: 1, explanation: 'Aceasta este o schemă de tip „money mule" (catâr financiar). Banii proveniți din fraude sunt „spălați" prin contul tău. Ești considerat complice la spălare de bani și riști pedeapsa cu închisoarea, chiar dacă nu știai proveniența banilor.' },
@@ -365,12 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
       { category: 'Schemă piramidală (Ponzi)', question: 'Un cunoscut îți spune că a găsit o platformă de investiții care oferă 30% profit garantat pe lună și te încurajează să aduci și alți prieteni, pentru un bonus. Ce ar trebui să te alerteze?',
         options: ['E o oportunitate bună dacă platforma are un site frumos și mulți utilizatori', 'Un randament „garantat" de 30%/lună e nerealist, iar structura bazată pe aducerea de noi investitori e specifică unei scheme piramidale (Ponzi)', 'Ar trebui să investesc doar o sumă mică, ca test', 'Dacă prietenul meu a câștigat deja bani, sigur e sigur și pentru mine'],
         correctAnswer: 1, explanation: 'Randamentele „garantate" mult peste piață, combinate cu recompense pentru aducerea de noi investitori, sunt semnătura clasică a schemelor piramidale (Ponzi). Banii noilor investitori plătesc „profitul" celor vechi, până când schema se prăbușește și majoritatea pierd tot.' },
-      { category: 'Broker fals pe rețele sociale', question: 'Pe Instagram, un „broker de investiții" cu poze de lux îți promite să-ți dubleze banii în cripto dacă îi trimiți suma prin transfer bancar sau portofel cripto. Ce faci?',
-        options: ['Îi trimit o sumă mică, să văd dacă funcționează', 'Îi cer să-mi trimită mai întâi un video ca dovadă că e serios', 'Nu trimit nimic — brokerii și platformele reale de investiții sunt autorizate de ASF, iar promisiunile de profit garantat pe rețele sociale sunt aproape mereu fraude', 'Accept doar dacă are mulți urmăritori și comentarii pozitive'],
-        correctAnswer: 2, explanation: 'Brokerii și platformele de investiții legitime din România sunt autorizate de ASF (Autoritatea de Supraveghere Financiară) și pot fi verificate pe asfromania.ro. Promisiunile de profit garantat, presiunea de a transfera rapid bani și lipsa unei autorizații verificabile sunt semne clare de fraudă cu investiții.' },
-      { category: 'Semnale de avertizare la orice investiție', question: 'Care este cel mai clar semnal că o „oportunitate de investiție" este de fapt o fraudă?',
-        options: ['Profit garantat, constant, mult peste dobânda bancară, indiferent de condițiile pieței', 'Compania publică rapoarte financiare anuale', 'Investiția are un risc explicat clar, inclusiv posibilitatea de a pierde bani', 'Poți afla oricând, din surse publice, cine deține și administrează compania'],
-        correctAnswer: 0, explanation: 'Orice investiție reală implică risc — nimeni nu poate garanta un profit fix, indiferent de piață. Când cineva promite „profit garantat" sau „fără risc", e aproape sigur o fraudă. Investițiile legitime explică deschis riscurile posibile, inclusiv pierderea banilor investiți.' },
     ];
 
     let currentIndex = 0, selectedOption = null, answered = false, score = 0;
@@ -571,7 +562,16 @@ document.addEventListener('DOMContentLoaded', () => {
     addExpenseRow(); addExpenseRow();
     addProductRow();
 
-    function fmt(n) { return n.toLocaleString('ro-RO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    // Formatare manuală (nu ne bazăm pe toLocaleString, care pe unele telefoane/
+    // browsere mai vechi ignoră locale-ul 'ro-RO' și arată punct în loc de virgulă).
+    // Rezultat garantat: "1.234,56" — punct la mii, virgulă la zecimale.
+    function fmt(n) {
+      const negative = n < 0;
+      n = Math.abs(Math.round(n * 100) / 100);
+      const parts = n.toFixed(2).split('.');
+      let intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return (negative ? '-' : '') + intPart + ',' + parts[1];
+    }
 
     document.getElementById('blitz-calculate-btn').addEventListener('click', () => {
       const capital = parseFloat(document.getElementById('biz-capital').value) || 0;
@@ -636,38 +636,8 @@ document.addEventListener('DOMContentLoaded', () => {
       resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    // Persistență locală (pe acest telefon/browser)
-    const STORAGE_KEY = 'cefca_blitz_business';
-
-    function collectState() {
-      return {
-        name: document.getElementById('biz-name').value,
-        owner: document.getElementById('biz-owner').value,
-        category: document.getElementById('biz-category').value,
-        description: document.getElementById('biz-description').value,
-        capital: document.getElementById('biz-capital').value,
-        expenses: [...expenseRowsEl.querySelectorAll('.row-item')].map(r => ({
-          type: r.querySelector('.exp-type').value,
-          desc: r.querySelector('.exp-desc').value,
-          amount: r.querySelector('.exp-amount').value,
-        })),
-        products: [...productRowsEl.querySelectorAll('.row-item')].map(r => ({
-          name: r.querySelector('.prod-name').value,
-          price: r.querySelector('.prod-price').value,
-          qty: r.querySelector('.prod-qty').value,
-          unit: r.querySelector('.prod-unit').value,
-        })),
-      };
-    }
-
-    document.getElementById('blitz-save-btn').addEventListener('click', () => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
-        alert('Salvat pe acest telefon! Datele rămân aici data viitoare când deschizi aplicația din același browser.');
-      } catch (e) {
-        alert('Nu am putut salva local (browserul blochează stocarea).');
-      }
-    });
+    // Notă: aplicația nu salvează nimic pe telefon — toate datele există doar
+    // cât timp pagina rămâne deschisă (memoria sesiunii curente).
 
     document.getElementById('blitz-reset-btn').addEventListener('click', () => {
       if (!confirm('Sigur resetezi planul de afaceri?')) return;
@@ -682,36 +652,46 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('blitz-result').classList.add('hidden');
     });
 
-    // Încarcă automat datele salvate anterior, dacă există
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      if (saved) {
-        document.getElementById('biz-name').value = saved.name || '';
-        document.getElementById('biz-owner').value = saved.owner || '';
-        document.getElementById('biz-category').value = saved.category || '';
-        document.getElementById('biz-description').value = saved.description || '';
-        document.getElementById('biz-capital').value = saved.capital || '';
-        expenseRowsEl.innerHTML = ''; expenseRowCount = 0;
-        (saved.expenses || []).forEach(e => addExpenseRow(e));
-        if (!saved.expenses || !saved.expenses.length) { addExpenseRow(); addExpenseRow(); }
-        productRowsEl.innerHTML = ''; productRowCount = 0;
-        (saved.products || []).forEach(p => addProductRow(p));
-        if (!saved.products || !saved.products.length) addProductRow();
-      }
-    } catch (e) { /* ignore */ }
+    // ---- Convertor valutar: curs BNR (Banca Națională a României), cu rezervă offline ----
+    const fallbackRates = { USD: 4.45, EUR: 4.97 }; // folosit doar dacă BNR nu poate fi accesat
+    let bnrRates = null;  // { USD: x, EUR: y } — populat din cursul zilei BNR
+    let bnrDate = null;
 
-    // ---- Convertor valutar (curs fix orientativ, ca în aplicația originală) ----
-    const exchangeRates = { 'USD-RON': 4.45, 'EUR-RON': 4.97 };
+    async function fetchBnrRates() {
+      try {
+        const res = await fetch('https://www.bnr.ro/nbrfxrates.xml');
+        if (!res.ok) throw new Error('BNR fetch failed');
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'application/xml');
+        const cube = xml.querySelector('Cube');
+        const rates = {};
+        xml.querySelectorAll('Rate').forEach(r => {
+          const code = r.getAttribute('currency');
+          if (code === 'USD' || code === 'EUR') rates[code] = parseFloat(r.textContent);
+        });
+        if (rates.USD && rates.EUR) {
+          bnrRates = rates;
+          bnrDate = cube ? cube.getAttribute('date') : null;
+        }
+      } catch (e) {
+        bnrRates = null; // rămânem pe cursul de rezervă
+      }
+    }
+    fetchBnrRates(); // pornește în fundal la deschiderea modulului
+
     const convBtn = document.getElementById('conv-btn');
     if (convBtn) {
       convBtn.addEventListener('click', () => {
         const amount = parseFloat(document.getElementById('conv-amount').value) || 0;
         const pair = document.getElementById('conv-pair').value;
-        const rate = exchangeRates[pair];
-        const converted = amount * rate;
         const [from] = pair.split('-');
+        const rate = bnrRates ? bnrRates[from] : fallbackRates[from];
+        const converted = amount * rate;
         const convResult = document.getElementById('conv-result');
-        convResult.textContent = `${fmt(amount)} ${from} = ${fmt(converted)} lei (curs orientativ 1 ${from} = ${rate.toFixed(2)} lei)`;
+        const sourceNote = bnrRates
+          ? `curs BNR din ${bnrDate}`
+          : `curs orientativ de rezervă (cursul live BNR nu a putut fi accesat)`;
+        convResult.textContent = `${fmt(amount)} ${from} = ${fmt(converted)} lei — 1 ${from} = ${rate.toFixed(4)} lei (${sourceNote})`;
         convResult.classList.remove('hidden');
       });
     }
@@ -730,13 +710,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ======================================================
      MODUL 5: JURIU
-     3 membri notează 5 criterii (scară 1-5) pentru fiecare echipă.
-     Scorul final = media celor 3 jurați. Clasament persistat local
-     (util când juriul folosește un singur telefon/tabletă la eveniment).
+     Fiecare din cei 3 jurați notează SEPARAT, pe propriul ecran de completare,
+     5 criterii (scară 1-5). Scorul final al echipei = media celor 3 jurați.
+     Totul e păstrat doar în memorie (nimic nu se salvează pe telefon) —
+     se pierde dacă pagina e reîncărcată, deci juriul ține pagina deschisă
+     pe durata evenimentului.
   ====================================================== */
   (function initJury() {
-    const membersWrap = document.getElementById('jury-members');
-    if (!membersWrap) return;
+    const selectView = document.getElementById('jury-team-select-view');
+    if (!selectView) return;
+    const statusView = document.getElementById('jury-team-status-view');
+    const scoringView = document.getElementById('jury-scoring-view');
 
     const criteria = [
       { id: 'prezentare', label: 'Calitatea prezentării' },
@@ -746,7 +730,11 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'echipa', label: 'Lucrul în echipă & răspunsuri la întrebări' },
     ];
     const SCALE_MAX = 5;
-    const STORAGE_KEY = 'cefca_jury_leaderboard';
+    const MAX_TOTAL = criteria.length * SCALE_MAX;
+
+    const teams = {};   // { numeEchipa: { 1: total|null, 2: total|null, 3: total|null } }
+    let currentTeam = null;
+    let scoringJuror = null; // 1, 2 sau 3 — juratul care completează acum
 
     function scoreOptionsHTML() {
       let html = '<option value="">-</option>';
@@ -754,103 +742,109 @@ document.addEventListener('DOMContentLoaded', () => {
       return html;
     }
 
-    // Randează 3 blocuri de jurat, fiecare cu cele 5 criterii
-    for (let j = 1; j <= 3; j++) {
-      const card = document.createElement('div');
-      card.className = 'card jury-member-card';
-      card.dataset.juror = j;
-      let rows = criteria.map(c => `
+    function showOnly(view) {
+      [selectView, statusView, scoringView].forEach(v => v.classList.add('hidden'));
+      view.classList.remove('hidden');
+    }
+
+    // ---- ECRAN A: alege/creează echipa ----
+    document.getElementById('jury-select-team-btn').addEventListener('click', () => {
+      const name = document.getElementById('jury-team-name').value.trim();
+      if (!name) { alert('Te rog completează numele echipei.'); return; }
+      if (!teams[name]) teams[name] = { 1: null, 2: null, 3: null };
+      currentTeam = name;
+      renderStatusView();
+      showOnly(statusView);
+    });
+
+    // ---- ECRAN B: status echipă + 3 butoane separate ----
+    function renderStatusView() {
+      document.getElementById('jury-current-team-title').textContent = `Echipa: ${currentTeam}`;
+      const wrap = document.getElementById('jury-juror-status-list');
+      const scores = teams[currentTeam];
+      wrap.innerHTML = [1, 2, 3].map(j => {
+        const done = scores[j] !== null;
+        return `
+        <div class="jury-criteria-row">
+          <label>Jurat ${j} ${done ? `— ✅ ${scores[j]}/${MAX_TOTAL}` : '— ⏳ neevaluat'}</label>
+          <button type="button" class="secondary-action-btn jury-juror-btn" data-juror="${j}" style="min-width:120px;">${done ? 'Refă evaluarea' : 'Completează'}</button>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('jury-juror-status-list').addEventListener('click', (e) => {
+      const btn = e.target.closest('.jury-juror-btn');
+      if (!btn) return;
+      openScoringScreen(parseInt(btn.dataset.juror, 10));
+    });
+
+    document.getElementById('jury-change-team-btn').addEventListener('click', () => {
+      currentTeam = null;
+      document.getElementById('jury-team-name').value = '';
+      showOnly(selectView);
+    });
+
+    // ---- ECRAN C: formular de notare, un singur jurat ----
+    function openScoringScreen(jurorNum) {
+      scoringJuror = jurorNum;
+      document.getElementById('jury-scoring-title').textContent = `Jurat ${jurorNum} — evaluează echipa „${currentTeam}"`;
+      const wrap = document.getElementById('jury-scoring-criteria');
+      wrap.innerHTML = criteria.map(c => `
         <div class="jury-criteria-row">
           <label>${c.label}</label>
           <select class="jury-score-select" data-criterion="${c.id}">${scoreOptionsHTML()}</select>
         </div>`).join('');
-      card.innerHTML = `<h3>Jurat ${j}</h3>${rows}<div class="jury-member-total">Total: <span class="juror-total">0</span> / ${criteria.length * SCALE_MAX}</div>`;
-      membersWrap.appendChild(card);
+      showOnly(scoringView);
     }
 
-    membersWrap.addEventListener('change', (e) => {
-      if (!e.target.classList.contains('jury-score-select')) return;
-      const card = e.target.closest('.jury-member-card');
-      const selects = card.querySelectorAll('.jury-score-select');
-      let total = 0;
-      selects.forEach(s => { total += parseInt(s.value, 10) || 0; });
-      card.querySelector('.juror-total').textContent = total;
+    document.getElementById('jury-cancel-score-btn').addEventListener('click', () => {
+      showOnly(statusView);
     });
 
-    function loadLeaderboard() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-      catch (e) { return []; }
-    }
-    function saveLeaderboard(list) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) { /* ignore */ }
-    }
+    document.getElementById('jury-submit-score-btn').addEventListener('click', () => {
+      const selects = document.querySelectorAll('#jury-scoring-criteria .jury-score-select');
+      let total = 0, incomplete = false;
+      selects.forEach(s => { if (!s.value) incomplete = true; total += parseInt(s.value, 10) || 0; });
+      if (incomplete) { alert('Te rog completează toate cele 5 criterii înainte de a trimite.'); return; }
 
+      teams[currentTeam][scoringJuror] = total;
+      renderStatusView();
+      renderLeaderboard();
+      showOnly(statusView);
+    });
+
+    // ---- CLASAMENT ----
     function renderLeaderboard() {
-      const list = loadLeaderboard().sort((a, b) => b.avgScore - a.avgScore);
+      const evaluated = Object.entries(teams)
+        .map(([name, s]) => {
+          const scored = [1, 2, 3].filter(j => s[j] !== null);
+          if (!scored.length) return null;
+          const totals = scored.map(j => s[j]);
+          const avgScore = totals.reduce((a, b) => a + b, 0) / totals.length;
+          return { name, s, scoredCount: scored.length, avgScore };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.avgScore - a.avgScore);
+
       const el = document.getElementById('jury-leaderboard');
-      if (!list.length) {
-        el.innerHTML = '<p class="jury-empty-msg">Nicio echipă evaluată încă.</p>';
+      if (!evaluated.length) {
+        el.innerHTML = '<p class="jury-empty-msg">Nicio echipă notată încă.</p>';
         return;
       }
-      const maxTotal = criteria.length * SCALE_MAX;
-      el.innerHTML = list.map((entry, idx) => `
+      el.innerHTML = evaluated.map((entry, idx) => {
+        const detail = [1, 2, 3].map(j => entry.s[j] === null ? '—' : entry.s[j]).join(' / ');
+        const partialNote = entry.scoredCount < 3 ? ` · scor parțial (${entry.scoredCount}/3 jurați)` : '';
+        return `
         <div class="jury-leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
           <span class="jury-rank-badge">${idx + 1}.</span>
           <span class="jury-team-info">
-            <span class="jury-team-name">${entry.teamName}</span>
-            <span class="jury-team-detail">Jurați: ${entry.jurorTotals.join(' / ')} (din ${maxTotal} fiecare)</span>
+            <span class="jury-team-name">${entry.name}</span>
+            <span class="jury-team-detail">Jurați: ${detail} (din ${MAX_TOTAL} fiecare)${partialNote}</span>
           </span>
-          <span class="jury-score">${entry.avgScore.toFixed(1)}/${maxTotal}</span>
-          <button type="button" class="jury-delete-btn" data-team-id="${entry.id}" aria-label="Șterge echipa">✕</button>
-        </div>`).join('');
+          <span class="jury-score">${entry.avgScore.toFixed(1)}/${MAX_TOTAL}</span>
+        </div>`;
+      }).join('');
     }
-
-    document.getElementById('jury-leaderboard').addEventListener('click', (e) => {
-      const btn = e.target.closest('.jury-delete-btn');
-      if (!btn) return;
-      const id = btn.dataset.teamId;
-      const list = loadLeaderboard().filter(entry => entry.id !== id);
-      saveLeaderboard(list);
-      renderLeaderboard();
-    });
-
-    function resetForm() {
-      document.getElementById('jury-team-name').value = '';
-      membersWrap.querySelectorAll('.jury-score-select').forEach(s => { s.value = ''; });
-      membersWrap.querySelectorAll('.juror-total').forEach(s => { s.textContent = '0'; });
-    }
-
-    document.getElementById('jury-reset-form-btn').addEventListener('click', resetForm);
-
-    document.getElementById('jury-save-btn').addEventListener('click', () => {
-      const teamName = document.getElementById('jury-team-name').value.trim();
-      if (!teamName) { alert('Te rog completează numele echipei.'); return; }
-
-      const jurorCards = membersWrap.querySelectorAll('.jury-member-card');
-      const jurorTotals = [];
-      let incomplete = false;
-      jurorCards.forEach(card => {
-        const selects = card.querySelectorAll('.jury-score-select');
-        let total = 0;
-        selects.forEach(s => { if (!s.value) incomplete = true; total += parseInt(s.value, 10) || 0; });
-        jurorTotals.push(total);
-      });
-      if (incomplete) { alert('Te rog completează toate criteriile pentru toți cei 3 jurați.'); return; }
-
-      const avgScore = jurorTotals.reduce((a, b) => a + b, 0) / jurorTotals.length;
-      const list = loadLeaderboard();
-      list.push({ id: 'team_' + Date.now(), teamName, jurorTotals, avgScore });
-      saveLeaderboard(list);
-      renderLeaderboard();
-      resetForm();
-      document.getElementById('jury-leaderboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    document.getElementById('jury-clear-all-btn').addEventListener('click', () => {
-      if (!confirm('Ștergi tot clasamentul echipelor? Nu se poate anula.')) return;
-      saveLeaderboard([]);
-      renderLeaderboard();
-    });
 
     renderLeaderboard();
   })();
