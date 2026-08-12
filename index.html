@@ -24,48 +24,85 @@
 
   <!-- ================= MENIU PRINCIPAL ================= -->
   <nav id="main-menu" class="menu-grid">
-    <button class="menu-card" data-target="view-holland">
-      <span class="menu-icon">🧭</span>
+    <button class="menu-card" data-target="view-module1-menu">
+      <span class="menu-icon">💼</span>
       <span class="menu-card-text">
-        <span class="menu-title">Modul 1 · Chestionar Holland</span>
-        <span class="menu-desc">Descoperă-ți tipul de personalitate profesională și meseriile potrivite</span>
+        <span class="menu-title">Modul 1 · Carieră</span>
+        <span class="menu-desc">Chestionar Holland + Prima Slujbă & Contracte</span>
       </span>
     </button>
-    <button class="menu-card" data-target="view-expenses">
+    <button class="menu-card" data-target="view-module2-menu">
       <span class="menu-icon">💰</span>
       <span class="menu-card-text">
-        <span class="menu-title">Modul 2 · Ierarhia Cheltuielilor</span>
-        <span class="menu-desc">Ordonează cheltuielile unei familii după importanță</span>
-      </span>
-    </button>
-    <button class="menu-card" data-target="view-antifraud">
-      <span class="menu-icon">🛡️</span>
-      <span class="menu-card-text">
-        <span class="menu-title">Modul 3 · Decalogul Antifraudă</span>
-        <span class="menu-desc">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții</span>
+        <span class="menu-title">Modul 2 · Educație Financiară</span>
+        <span class="menu-desc">Ierarhia Cheltuielilor + Decalogul Antifraudă</span>
       </span>
     </button>
     <button class="menu-card" data-target="view-blitz">
       <span class="menu-icon">🚀</span>
       <span class="menu-card-text">
-        <span class="menu-title">Modul 4 · Blitz Business</span>
+        <span class="menu-title">Modul 3 · Creativitate în Afaceri</span>
         <span class="menu-desc">Construiește un plan de afaceri rapid și calculează-ți profitul</span>
       </span>
     </button>
     <button class="menu-card" data-target="view-jury">
       <span class="menu-icon">⚖️</span>
       <span class="menu-card-text">
-        <span class="menu-title">Modul 5 · Juriu</span>
+        <span class="menu-title">Modul 4 · Jurizare</span>
         <span class="menu-desc">Cei 3 membri ai juriului notează echipele care își prezintă afacerea</span>
       </span>
     </button>
   </nav>
 
+  <!-- ================= SUBMENIU MODUL 1: CARIERĂ ================= -->
+  <section id="view-module1-menu" class="app-view hidden">
+    <button class="back-btn" data-back="main-menu">← Înapoi la meniu</button>
+    <h2>Modul 1 · Carieră</h2>
+    <nav class="menu-grid">
+      <button class="menu-card" data-target="view-holland">
+        <span class="menu-icon">🧭</span>
+        <span class="menu-card-text">
+          <span class="menu-title">Chestionar Holland</span>
+          <span class="menu-desc">Descoperă-ți tipul de personalitate profesională și meseriile potrivite</span>
+        </span>
+      </button>
+      <button class="menu-card" data-target="view-career">
+        <span class="menu-icon">📄</span>
+        <span class="menu-card-text">
+          <span class="menu-title">Prima Slujbă & Contracte</span>
+          <span class="menu-desc">Salariu brut/net, contract de muncă, negociere, credite, economii vs. investiții</span>
+        </span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ================= SUBMENIU MODUL 2: EDUCAȚIE FINANCIARĂ ================= -->
+  <section id="view-module2-menu" class="app-view hidden">
+    <button class="back-btn" data-back="main-menu">← Înapoi la meniu</button>
+    <h2>Modul 2 · Educație Financiară</h2>
+    <nav class="menu-grid">
+      <button class="menu-card" data-target="view-expenses">
+        <span class="menu-icon">💰</span>
+        <span class="menu-card-text">
+          <span class="menu-title">Ierarhia Cheltuielilor</span>
+          <span class="menu-desc">Ordonează cheltuielile unei familii după importanță</span>
+        </span>
+      </button>
+      <button class="menu-card" data-target="view-antifraud">
+        <span class="menu-icon">🛡️</span>
+        <span class="menu-card-text">
+          <span class="menu-title">Decalogul Antifraudă</span>
+          <span class="menu-desc">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții</span>
+        </span>
+      </button>
+    </nav>
+  </section>
+
   <!-- ================= HOLLAND ================= -->
   <section id="view-holland" class="app-view hidden">
-    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <button class="back-btn" data-back="view-module1-menu">← Înapoi</button>
     <section id="holland-section">
-      <h2>Modul 1 · Chestionar de Interese Profesionale (Holland)</h2>
+      <h2>Modul 1 · Carieră — Chestionar Holland</h2>
       <p class="section-intro">Pentru fiecare activitate/descriere, alegeți simbolul corespunzător: ✔️ pentru „Îmi place", ? pentru „Așa și așa", ❌ pentru „Nu-mi place".</p>
 
       <form id="holland-quiz">
@@ -123,11 +160,60 @@
     </section>
   </section>
 
+  <!-- ================= PRIMA SLUJBĂ & CONTRACTE ================= -->
+  <section id="view-career" class="app-view hidden">
+    <button class="back-btn" data-back="view-module1-menu">← Înapoi</button>
+    <section id="career-section">
+      <h2>Modul 1 · Carieră — Prima Slujbă & Contracte</h2>
+      <p class="section-intro">Ce trebuie să știi înainte să intri pe piața muncii: salariu, contracte, negociere și primii pași în gestionarea banilor câștigați.</p>
+
+      <div class="card">
+        <details class="tip-accordion" open>
+          <summary>💵 Salariul brut vs. net</summary>
+          <p style="margin-top:10px; margin-bottom:10px;">Salariul „brut" e suma din contract, dar nu e ce ajunge în cont. Din brut se scad automat:</p>
+          <ul>
+            <li><strong>CAS</strong> (contribuția la pensie) — 25% din brut</li>
+            <li><strong>CASS</strong> (contribuția la sănătate) — 10% din brut</li>
+            <li><strong>Impozitul pe venit</strong> — 10% din (brut − CAS − CASS)</li>
+          </ul>
+          <p style="margin-top:10px;"><strong>Exemplu:</strong> la un salariu brut de 4.000 lei — CAS 1.000 lei, CASS 400 lei, rămân 2.600 lei; impozit 10% din 2.600 = 260 lei. Salariul net ajunge la aproximativ <strong>2.340 lei</strong>. Diferența dintre ce ți se promite la interviu („brut") și ce vezi în cont („net") e mereu de aproximativ 41,5%.</p>
+        </details>
+        <details class="tip-accordion">
+          <summary>📝 Contractul de muncă</summary>
+          <ul>
+            <li><strong>Determinat vs. nedeterminat</strong> — determinat înseamnă că are o dată de final (ex: un proiect, un sezon); nedeterminat nu are limită de timp și oferă mai multă stabilitate.</li>
+            <li><strong>Perioada de probă</strong> — de obicei 30-90 de zile, în care oricare parte poate renunța mai ușor; e normală, dar întreabă cât durează și ce se evaluează.</li>
+            <li><strong>Normă întreagă vs. parțială</strong> — normă întreagă = 8 ore/zi, 40 ore/săptămână; parțială = mai puține ore, salariu proporțional.</li>
+            <li><strong>Ce verifici înainte să semnezi:</strong> salariul (brut sau net?), programul de lucru, ce beneficii sunt incluse (tichete, decontare transport, asigurare medicală), condițiile de concediere.</li>
+            <li>Ai dreptul la o copie a contractului semnat — cere-o întotdeauna.</li>
+          </ul>
+        </details>
+        <details class="tip-accordion">
+          <summary>🤝 Negocierea salariului la interviu</summary>
+          <ul>
+            <li>Documentează-te înainte cât se plătește, în medie, pentru poziția respectivă (site-uri de joburi, întrebări în cercul de cunoștințe).</li>
+            <li>Când ești întrebat „ce salariu dorești", dă un interval realist, nu o sumă fixă — lasă loc de negociere.</li>
+            <li>Nu te grăbi să accepți prima ofertă; e normal să ceri timp de gândire (24-48h).</li>
+            <li>Beneficiile contează și ele: tichete de masă, decontare transport, zile libere suplimentare, program flexibil — pot compensa un salariu puțin mai mic.</li>
+          </ul>
+        </details>
+        <details class="tip-accordion">
+          <summary>🏦 Economii vs. investiții</summary>
+          <ul>
+            <li><strong>Fondul de urgență</strong> — bani lichizi, ușor de accesat (cont de economii), suficienți pentru 3-6 luni de cheltuieli. Nu se investesc, stau „la îndemână" pentru neprevăzut.</li>
+            <li><strong>Investițiile</strong> (acțiuni, fonduri, obligațiuni) au potențial de câștig mai mare, dar și risc — nu le atingi pe termen scurt, sunt pentru obiective de peste 5 ani.</li>
+            <li><strong>Pilonul II și III de pensii</strong> — Pilonul II e obligatoriu (parte din CAS se duce acolo automat); Pilonul III e opțional, cu deduceri fiscale, și cu cât începi mai devreme, cu atât se acumulează mai mult până la pensie.</li>
+          </ul>
+        </details>
+      </div>
+    </section>
+  </section>
+
   <!-- ================= IERARHIA CHELTUIELILOR ================= -->
   <section id="view-expenses" class="app-view hidden">
-    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <button class="back-btn" data-back="view-module2-menu">← Înapoi</button>
     <section id="expense-prioritization-section">
-      <h2>Modul 2 · Ierarhizează Cheltuielile Familiei</h2>
+      <h2>Modul 2 · Educație Financiară — Ierarhia Cheltuielilor</h2>
       <p class="section-intro">Alege pentru fiecare cheltuială o prioritate de la 1 (cea mai importantă/obligatorie) la 16 (cea mai puțin importantă). Odată aleasă o cifră la o cheltuială, ea dispare din lista celorlalte — deci nu poți aloca aceeași cifră de două ori.</p>
 
       <ol id="expense-list-numeric" class="expense-list-drag card"></ol>
@@ -153,9 +239,9 @@
 
   <!-- ================= DECALOGUL ANTIFRAUDĂ ================= -->
   <section id="view-antifraud" class="app-view hidden">
-    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <button class="back-btn" data-back="view-module2-menu">← Înapoi</button>
     <section id="antifraud-section">
-      <h2>Modul 3 · Decalogul Antifraudă</h2>
+      <h2>Modul 2 · Educație Financiară — Decalogul Antifraudă</h2>
       <p class="section-intro">Testează-ți cunoștințele despre protecția împotriva fraudelor bancare și de investiții — 10 întrebări pentru siguranța banilor tăi.</p>
       <div id="antifraud-quiz-root"></div>
 
@@ -222,15 +308,67 @@
           </ul>
         </div>
       </div>
+
+      <div class="card">
+        <button type="button" id="toggle-credit-btn" class="secondary-action-btn">💵 Credite și DAE</button>
+        <div id="credit-content" class="hidden">
+          <ul style="padding-left:20px; margin-top:10px;">
+            <li style="margin-bottom:10px;"><strong>Dobânda</strong> e doar o parte din cost — <strong>DAE (Dobânda Anuală Efectivă)</strong> include și comisioanele, asigurările și alte taxe, și arată costul real al unui credit pe an.</li>
+            <li style="margin-bottom:10px;">Un „credit fără dobândă" la un magazin poate avea, în realitate, comisioane ascunse care fac DAE-ul la fel de mare ca la un credit normal — citește mereu DAE-ul, nu doar „dobânda".</li>
+            <li style="margin-bottom:10px;">Creditele de nevoi personale au de obicei dobânzi mai mari decât cele ipotecare, pentru că nu au o garanție (o casă, o mașină) în spate.</li>
+            <li>Cardul de credit e util pentru urgențe, dar dobânda dacă nu plătești integral la scadență e foarte mare — evită să duci sold pe cardul de credit de pe o lună pe alta.</li>
+          </ul>
+        </div>
+      </div>
     </section>
   </section>
 
   <!-- ================= BLITZ BUSINESS ================= -->
   <section id="view-blitz" class="app-view hidden">
-    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <button class="back-btn" data-back="main-menu">← Înapoi la meniu</button>
     <section id="blitz-section">
-      <h2>Modul 4 · Blitz Business</h2>
+      <h2>Modul 3 · Creativitate în Afaceri</h2>
       <p class="section-intro">Construiește rapid un plan de afaceri: pornește de la un capital inițial, adaugă cheltuielile și veniturile, apoi vezi automat profitul echipei tale.</p>
+
+      <div class="card">
+        <button type="button" id="toggle-legal-btn" class="secondary-action-btn">💼 Ce formă legală poate avea o afacere?</button>
+        <div id="legal-content" class="hidden">
+          <p class="section-intro" style="margin: 14px 0;">Pe scurt, actualizat iulie 2026 — pentru decizii reale, discută mereu cu un contabil.</p>
+          <details class="tip-accordion" open>
+            <summary>👤 PFA (Persoană Fizică Autorizată)</summary>
+            <ul>
+              <li>Lucrezi pe cont propriu, poți angaja maximum 3 persoane</li>
+              <li>Impozit pe venit: <strong>10%</strong>, plus CAS (pensie) și CASS (sănătate), calculate după praguri legate de salariul minim pe economie (4.325 lei, din 1 iulie 2026)</li>
+              <li>Răspunzi cu bunurile personale pentru datoriile afacerii — nu există separare</li>
+              <li>Înființare simplă și ieftină (~100-200 lei), fără capital minim necesar</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>👥 Întreprindere Individuală / Familială (ÎI / IF)</summary>
+            <ul>
+              <li>Aproape identică cu PFA — același impozit de 10%, aceeași răspundere personală nelimitată</li>
+              <li>IF (familială) implică mai mulți membri ai aceleiași familii în afacere</li>
+              <li>Diferă puțin doar în ce cheltuieli poți deduce față de PFA</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>🏢 SRL (Societate cu Răspundere Limitată)</summary>
+            <ul>
+              <li>Firmă separată de tine ca persoană — răspunzi doar cu ce ai pus în firmă, nu cu bunurile personale</li>
+              <li>Impozit pe cifra de afaceri (regim „micro"): <strong>1%</strong> (poate fi 3% peste anumite praguri de venit sau pentru anumite domenii)</li>
+              <li>Dacă scoți profitul ca dividende: impozit de <strong>16%</strong> (din 2026)</li>
+              <li>Capital social minim simbolic, dar mai multă birocrație — contabilitate obligatorie</li>
+            </ul>
+          </details>
+          <details class="tip-accordion">
+            <summary>🤔 Pe scurt, cum alegi</summary>
+            <ul>
+              <li>Vrei ceva simplu, rapid, lucrezi singur sau cu puțini oameni → <strong>PFA / ÎI</strong></li>
+              <li>Vrei protecție pentru bunurile tale personale, vrei să crești și să angajezi mulți oameni → <strong>SRL</strong></li>
+            </ul>
+          </details>
+        </div>
+      </div>
 
       <div class="card">
         <h3>1. Afacerea ta</h3>
@@ -239,11 +377,23 @@
           <label>Numele proprietarului<input type="text" id="biz-owner" placeholder="Ex: Ana Popescu"></label>
           <label class="row-full">Domeniul de activitate<input type="text" id="biz-category" placeholder="Ex: Alimentație, IT, Servicii, etc."></label>
           <label class="row-full">Descriere<input type="text" id="biz-description" placeholder="Descrie afacerea ta în câteva cuvinte..."></label>
-          <label>Capital inițial (lei)<input type="number" id="biz-capital" min="0" placeholder="ex: 200"></label>
         </div>
+
+        <div class="currency-converter">
+          <h4>📈 Calculator dobândă compusă</h4>
+          <p class="converter-hint">Vezi ce se întâmplă dacă economisești o sumă lunară pe termen lung — util pentru a înțelege puterea timpului asupra banilor, înainte de a stabili capitalul inițial.</p>
+          <div class="converter-row" style="flex-wrap:wrap;">
+            <input type="number" id="ci-monthly" min="0" step="1" placeholder="Sumă lunară (lei)">
+            <input type="number" id="ci-years" min="1" step="1" placeholder="Nr. ani">
+            <input type="number" id="ci-rate" min="0" step="0.1" placeholder="Dobândă anuală %">
+            <button type="button" id="ci-calc-btn" class="secondary-action-btn">Calculează</button>
+          </div>
+          <div id="ci-result" class="converter-result hidden"></div>
+        </div>
+
         <div class="currency-converter">
           <h4>💱 Convertor valutar (pentru capital)</h4>
-          <p class="converter-hint">Folosește cursul zilei publicat de Banca Națională a României (BNR). Ai capitalul în altă monedă? Convertește-l în lei și folosește rezultatul mai sus.</p>
+          <p class="converter-hint">Folosește cursul zilei publicat de Banca Națională a României (BNR). Ai capitalul în altă monedă? Convertește-l în lei — se completează automat mai jos.</p>
           <div class="converter-row">
             <input type="number" id="conv-amount" min="0" step="0.01" placeholder="Sumă">
             <select id="conv-pair">
@@ -254,7 +404,30 @@
           </div>
           <div id="conv-result" class="converter-result hidden"></div>
         </div>
+
+        <div class="form-grid" style="margin-top:14px;">
+          <label class="row-full">Capital inițial (lei)<input type="number" id="biz-capital" min="0" placeholder="ex: 200 (sau folosește convertorul de mai sus)"></label>
+        </div>
       </div>
+
+      <div class="card">
+        <h3>2. Cheltuieli</h3>
+        <div id="expense-rows" class="rows-list"></div>
+        <button type="button" id="add-expense-row" class="secondary-action-btn add-row">+ Adaugă cheltuială</button>
+      </div>
+
+      <div class="card">
+        <h3>3. Produse / Servicii (Venituri)</h3>
+        <div id="product-rows" class="rows-list"></div>
+        <button type="button" id="add-product-row" class="secondary-action-btn add-row">+ Adaugă produs/serviciu</button>
+      </div>
+
+      <div class="action-buttons-group">
+        <button type="button" id="blitz-calculate-btn" class="main-action-btn calculate">Calculează Sumarul Financiar</button>
+        <button type="button" id="blitz-reset-btn" class="secondary-action-btn reset">Resetează</button>
+      </div>
+
+      <div id="blitz-result" class="hidden card result-card"></div>
 
       <div class="card presentation-tips-card">
         <button type="button" id="toggle-tips-btn" class="secondary-action-btn">ℹ️ Arată sfaturi pentru prezentare</button>
@@ -312,31 +485,18 @@
       </div>
 
       <div class="card">
-        <h3>2. Cheltuieli</h3>
-        <div id="expense-rows" class="rows-list"></div>
-        <button type="button" id="add-expense-row" class="secondary-action-btn add-row">+ Adaugă cheltuială</button>
+        <h3>4. Descrierea afacerii pentru prezentare</h3>
+        <p class="section-intro" style="margin-bottom:10px;">Scrie aici, pe larg, ce veți spune juriului — poate fi folosit ca „scenariu" în timpul prezentării.</p>
+        <textarea id="biz-presentation-text" rows="8" style="width:100%; font-family:inherit; font-size:1em; padding:12px; border:1px solid var(--border-color); border-radius:8px; resize:vertical;" placeholder="Ex: Afacerea noastră, [nume], rezolvă problema... Ne adresăm către... Am pornit cu un capital de... Estimăm un profit de... Echipa noastră..."></textarea>
       </div>
-
-      <div class="card">
-        <h3>3. Produse / Servicii (Venituri)</h3>
-        <div id="product-rows" class="rows-list"></div>
-        <button type="button" id="add-product-row" class="secondary-action-btn add-row">+ Adaugă produs/serviciu</button>
-      </div>
-
-      <div class="action-buttons-group">
-        <button type="button" id="blitz-calculate-btn" class="main-action-btn calculate">Calculează Sumarul Financiar</button>
-        <button type="button" id="blitz-reset-btn" class="secondary-action-btn reset">Resetează</button>
-      </div>
-
-      <div id="blitz-result" class="hidden card result-card"></div>
     </section>
   </section>
 
   <!-- ================= JURIU ================= -->
   <section id="view-jury" class="app-view hidden">
-    <button class="back-btn" data-back>← Înapoi la meniu</button>
+    <button class="back-btn" data-back="main-menu">← Înapoi la meniu</button>
     <section id="jury-section">
-      <h2>Modul 5 · Juriu</h2>
+      <h2>Modul 4 · Jurizare</h2>
       <p class="section-intro">Fiecare dintre cei 3 jurați notează separat echipa, de pe propriul telefon, 5 criterii pe o scară de la 1 la 5. Scorurile se sincronizează live între toate telefoanele conectate — jurații pot nota chiar în același timp. Scorul final e media evaluărilor.</p>
 
       <!-- ECRAN 0: cod de acces (PIN) — obligatoriu înainte de orice notare -->
@@ -350,25 +510,39 @@
         <button type="button" id="jury-pin-submit-btn" class="main-action-btn calculate" style="margin-top:14px;">Continuă</button>
       </div>
 
+      <!-- ECRAN 1: fiecare jurat își alege rolul O SINGURĂ DATĂ, pe telefonul lui -->
+      <div id="jury-identity-view" class="card hidden">
+        <h3>Care jurat ești?</h3>
+        <p class="section-intro" style="margin-bottom:14px;">Alege o singură dată, pe telefonul tău. Vei rămâne acest jurat pentru toată sesiunea (până reîncarci pagina).</p>
+        <div class="action-buttons-group" style="flex-direction:column;">
+          <button type="button" class="main-action-btn calculate jury-identity-btn" data-juror="1">Sunt Jurat 1</button>
+          <button type="button" class="main-action-btn calculate jury-identity-btn" data-juror="2">Sunt Jurat 2</button>
+          <button type="button" class="main-action-btn calculate jury-identity-btn" data-juror="3">Sunt Jurat 3</button>
+        </div>
+      </div>
+
       <!-- ECRAN A: alegere/creare echipă -->
       <div id="jury-team-select-view" class="card hidden">
-        <h3>Echipa evaluată</h3>
+        <h3 id="jury-team-select-title">Echipa evaluată</h3>
         <div class="form-grid">
           <label class="row-full">Numele echipei<input type="text" id="jury-team-name" placeholder="Ex: Echipa Vulturii"></label>
         </div>
         <button type="button" id="jury-select-team-btn" class="main-action-btn calculate" style="margin-top:14px;">Continuă cu această echipă</button>
       </div>
 
-      <!-- ECRAN B: status echipă curentă + buton separat per jurat -->
+      <!-- ECRAN B: status echipă curentă — un singur buton, blocat pe juratul curent -->
       <div id="jury-team-status-view" class="hidden">
         <div class="card">
           <h3 id="jury-current-team-title">Echipa</h3>
           <div id="jury-juror-status-list"></div>
-          <button type="button" id="jury-change-team-btn" class="secondary-action-btn" style="margin-top:14px;">↺ Altă echipă</button>
+          <div class="action-buttons-group">
+            <button type="button" id="jury-my-score-btn" class="main-action-btn calculate">Completează</button>
+            <button type="button" id="jury-change-team-btn" class="secondary-action-btn">↺ Altă echipă</button>
+          </div>
         </div>
       </div>
 
-      <!-- ECRAN C: formular de notare pentru UN singur jurat -->
+      <!-- ECRAN C: formular de notare pentru juratul curent -->
       <div id="jury-scoring-view" class="hidden">
         <div class="card">
           <h3 id="jury-scoring-title">Jurat</h3>

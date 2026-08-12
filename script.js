@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ======================================================
-     NAVIGARE MENIU
+     NAVIGARE MENIU (cu submeniuri imbricate pentru Modul 1 și Modul 2)
   ====================================================== */
   const menu = document.getElementById('main-menu');
   const views = document.querySelectorAll('.app-view');
@@ -17,11 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.classList.remove('hidden');
     window.scrollTo({top:0, behavior:'smooth'});
   }
-  menu.querySelectorAll('.menu-card').forEach(card => {
+  // Toate cardurile de meniu, atât din meniul principal cât și din submeniurile Modul 1/Modul 2
+  document.querySelectorAll('.menu-card').forEach(card => {
     card.addEventListener('click', () => showView(card.dataset.target));
   });
+  // Butoanele „Înapoi" pot duce fie la meniul principal, fie la un submeniu anume
   document.querySelectorAll('[data-back]').forEach(btn => {
-    btn.addEventListener('click', showMenu);
+    btn.addEventListener('click', () => {
+      const backTarget = btn.dataset.back;
+      if (!backTarget || backTarget === 'main-menu') showMenu();
+      else showView(backTarget);
+    });
   });
 
   /* ======================================================
@@ -503,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupToggle('toggle-protection-btn', 'protection-content', '🛡️ Cum să te protejezi (principii)', '🛡️ Ascunde principiile');
     setupToggle('toggle-resources-btn', 'resources-content', '📞 Unde anunți o fraudă', '📞 Ascunde');
+    setupToggle('toggle-credit-btn', 'credit-content', '💵 Credite și DAE', '💵 Ascunde');
   })();
 
   /* ======================================================
@@ -646,11 +653,46 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('biz-category').value = '';
       document.getElementById('biz-description').value = '';
       document.getElementById('biz-capital').value = '';
+      document.getElementById('conv-amount').value = '';
+      document.getElementById('conv-result').classList.add('hidden');
+      document.getElementById('ci-monthly').value = '';
+      document.getElementById('ci-years').value = '';
+      document.getElementById('ci-rate').value = '';
+      document.getElementById('ci-result').classList.add('hidden');
+      document.getElementById('biz-presentation-text').value = '';
       expenseRowsEl.innerHTML = ''; productRowsEl.innerHTML = '';
       expenseRowCount = 0; productRowCount = 0;
       addExpenseRow(); addExpenseRow(); addProductRow();
       document.getElementById('blitz-result').classList.add('hidden');
     });
+
+    // ---- Calculator dobândă compusă (economii lunare pe termen lung) ----
+    const ciBtn = document.getElementById('ci-calc-btn');
+    if (ciBtn) {
+      ciBtn.addEventListener('click', () => {
+        const monthly = parseFloat(document.getElementById('ci-monthly').value) || 0;
+        const years = parseFloat(document.getElementById('ci-years').value) || 0;
+        const ratePct = parseFloat(document.getElementById('ci-rate').value) || 0;
+        const ciResult = document.getElementById('ci-result');
+        if (monthly <= 0 || years <= 0) {
+          ciResult.textContent = 'Completează suma lunară și numărul de ani.';
+          ciResult.classList.remove('hidden');
+          return;
+        }
+        const months = years * 12;
+        const contributed = monthly * months;
+        let futureValue;
+        if (ratePct <= 0) {
+          futureValue = contributed;
+        } else {
+          const i = (ratePct / 100) / 12;
+          futureValue = monthly * ((Math.pow(1 + i, months) - 1) / i);
+        }
+        const interestEarned = futureValue - contributed;
+        ciResult.textContent = `După ${years} ${years === 1 ? 'an' : 'ani'}: ai depus în total ${fmt(contributed)} lei, iar cu dobândă compusă ai acumula aproximativ ${fmt(futureValue)} lei (din care ${fmt(interestEarned)} lei doar din dobândă).`;
+        ciResult.classList.remove('hidden');
+      });
+    }
 
     // ---- Convertor valutar: curs BNR (Banca Națională a României), cu rezervă offline ----
     const fallbackRates = { USD: 4.45, EUR: 4.97 }; // folosit doar dacă BNR nu poate fi accesat
@@ -691,8 +733,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const sourceNote = bnrRates
           ? `curs BNR din ${bnrDate}`
           : `curs orientativ de rezervă (cursul live BNR nu a putut fi accesat)`;
-        convResult.textContent = `${fmt(amount)} ${from} = ${fmt(converted)} lei — 1 ${from} = ${rate.toFixed(4)} lei (${sourceNote})`;
+        convResult.textContent = `${fmt(amount)} ${from} = ${fmt(converted)} lei — 1 ${from} = ${rate.toFixed(4)} lei (${sourceNote}) → completat automat mai jos, la Capital inițial`;
         convResult.classList.remove('hidden');
+        document.getElementById('biz-capital').value = (Math.round(converted * 100) / 100);
       });
     }
 
@@ -706,6 +749,17 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleTipsBtn.textContent = isHidden ? 'ℹ️ Ascunde sfaturile' : 'ℹ️ Arată sfaturi pentru prezentare';
       });
     }
+
+    // ---- Toggle forme legale de afacere (PFA / ÎI / SRL) ----
+    const toggleLegalBtn = document.getElementById('toggle-legal-btn');
+    if (toggleLegalBtn) {
+      toggleLegalBtn.addEventListener('click', () => {
+        const content = document.getElementById('legal-content');
+        const isHidden = content.classList.contains('hidden');
+        content.classList.toggle('hidden');
+        toggleLegalBtn.textContent = isHidden ? '💼 Ascunde' : '💼 Ce formă legală poate avea o afacere?';
+      });
+    }
   })();
 
   /* ======================================================
@@ -717,8 +771,9 @@ document.addEventListener('DOMContentLoaded', () => {
   ====================================================== */
   (function initJury() {
     const pinView = document.getElementById('jury-pin-view');
+    const identityView = document.getElementById('jury-identity-view');
     const selectView = document.getElementById('jury-team-select-view');
-    if (!pinView || !selectView) return;
+    if (!pinView || !identityView || !selectView) return;
     const statusView = document.getElementById('jury-team-status-view');
     const scoringView = document.getElementById('jury-scoring-view');
 
@@ -743,11 +798,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let db = null;
     let juryRootRef = null;
+    let myJurorNumber = null;   // 1, 2 sau 3 — ales O SINGURĂ DATĂ, rămâne fix toată sesiunea
     let currentTeam = null;     // numele afișat, ales de utilizator
     let currentKey = null;      // versiunea „sigură" a numelui, folosită ca și cheie Firebase
     let currentTeamRef = null;
     let currentTeamListener = null;
-    let scoringJuror = null;    // 1, 2 sau 3 — juratul care completează acum
     let latestTeamData = {};    // ultima stare primită de la Firebase pentru echipa curentă
 
     function sanitizeKey(name) {
@@ -759,7 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return html;
     }
     function showOnly(view) {
-      [pinView, selectView, statusView, scoringView].forEach(v => v.classList.add('hidden'));
+      [pinView, identityView, selectView, statusView, scoringView].forEach(v => v.classList.add('hidden'));
       view.classList.remove('hidden');
     }
 
@@ -778,12 +833,21 @@ document.addEventListener('DOMContentLoaded', () => {
           db = firebase.database();
           juryRootRef = db.ref('jury');
           attachLeaderboardListener();
-          showOnly(selectView);
+          showOnly(identityView);
         })
         .catch(() => {
           errorEl.textContent = 'Nu ne-am putut conecta (verifică internetul) — încearcă din nou.';
           errorEl.classList.remove('hidden');
         });
+    });
+
+    // ---- ECRAN 1: alegerea rolului — o singură dată, blocat toată sesiunea ----
+    document.querySelectorAll('.jury-identity-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        myJurorNumber = parseInt(btn.dataset.juror, 10);
+        document.getElementById('jury-team-select-title').textContent = `Echipa evaluată (tu ești Jurat ${myJurorNumber})`;
+        showOnly(selectView);
+      });
     });
 
     // ---- ECRAN A: alege/creează echipa ----
@@ -806,26 +870,28 @@ document.addEventListener('DOMContentLoaded', () => {
       showOnly(statusView);
     });
 
-    // ---- ECRAN B: status echipă + 3 butoane separate (live, din Firebase) ----
+    // ---- ECRAN B: status echipă (informativ, toți 3 jurați) + UN SINGUR buton, blocat pe rolul meu ----
     function renderStatusView() {
-      document.getElementById('jury-current-team-title').textContent = `Echipa: ${currentTeam}`;
+      document.getElementById('jury-current-team-title').textContent = `Echipa: ${currentTeam} — tu ești Jurat ${myJurorNumber}`;
       const wrap = document.getElementById('jury-juror-status-list');
       const scores = latestTeamData.scores || {};
       wrap.innerHTML = [1, 2, 3].map(j => {
         const val = scores[j];
         const done = val !== undefined && val !== null;
+        const meTag = j === myJurorNumber ? ' (tu)' : '';
         return `
         <div class="jury-criteria-row">
-          <label>Jurat ${j} ${done ? `— ✅ ${val}/${MAX_TOTAL}` : '— ⏳ neevaluat'}</label>
-          <button type="button" class="secondary-action-btn jury-juror-btn" data-juror="${j}" style="min-width:120px;">${done ? 'Refă evaluarea' : 'Completează'}</button>
+          <label>Jurat ${j}${meTag} ${done ? `— ✅ ${val}/${MAX_TOTAL}` : '— ⏳ neevaluat'}</label>
         </div>`;
       }).join('');
+
+      const myDone = scores[myJurorNumber] !== undefined && scores[myJurorNumber] !== null;
+      const myBtn = document.getElementById('jury-my-score-btn');
+      myBtn.textContent = myDone ? `Refă evaluarea ta (Jurat ${myJurorNumber})` : `Completează ca Jurat ${myJurorNumber}`;
     }
 
-    document.getElementById('jury-juror-status-list').addEventListener('click', (e) => {
-      const btn = e.target.closest('.jury-juror-btn');
-      if (!btn) return;
-      openScoringScreen(parseInt(btn.dataset.juror, 10));
+    document.getElementById('jury-my-score-btn').addEventListener('click', () => {
+      openScoringScreen();
     });
 
     document.getElementById('jury-change-team-btn').addEventListener('click', () => {
@@ -835,10 +901,9 @@ document.addEventListener('DOMContentLoaded', () => {
       showOnly(selectView);
     });
 
-    // ---- ECRAN C: formular de notare, un singur jurat ----
-    function openScoringScreen(jurorNum) {
-      scoringJuror = jurorNum;
-      document.getElementById('jury-scoring-title').textContent = `Jurat ${jurorNum} — evaluează echipa „${currentTeam}"`;
+    // ---- ECRAN C: formular de notare, doar pentru juratul curent (myJurorNumber) ----
+    function openScoringScreen() {
+      document.getElementById('jury-scoring-title').textContent = `Jurat ${myJurorNumber} — evaluează echipa „${currentTeam}"`;
       const wrap = document.getElementById('jury-scoring-criteria');
       wrap.innerHTML = criteria.map(c => `
         <div class="jury-criteria-row">
@@ -858,7 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
       selects.forEach(s => { if (!s.value) incomplete = true; total += parseInt(s.value, 10) || 0; });
       if (incomplete) { alert('Te rog completează toate cele 5 criterii înainte de a trimite.'); return; }
 
-      currentTeamRef.child('scores/' + scoringJuror).set(total)
+      currentTeamRef.child('scores/' + myJurorNumber).set(total)
         .then(() => showOnly(statusView))
         .catch(() => { alert('Nu s-a putut trimite evaluarea — verifică conexiunea la internet și încearcă din nou.'); });
     });
