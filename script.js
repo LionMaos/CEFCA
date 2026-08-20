@@ -17,11 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.classList.remove('hidden');
     window.scrollTo({top:0, behavior:'smooth'});
   }
-  // Toate cardurile de meniu, atât din meniul principal cât și din submeniurile Modul 1/Modul 2
   document.querySelectorAll('.menu-card').forEach(card => {
     card.addEventListener('click', () => showView(card.dataset.target));
   });
-  // Butoanele „Înapoi" pot duce fie la meniul principal, fie la un submeniu anume
   document.querySelectorAll('[data-back]').forEach(btn => {
     btn.addEventListener('click', () => {
       const backTarget = btn.dataset.back;
@@ -167,9 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ======================================================
      MODUL 2: IERARHIA CHELTUIELILOR
-     (fiecare cheltuială alege un număr 1-16 dintr-un meniu derulant;
-      numărul ales dispare din meniurile celorlalte cheltuieli, deci
-      structural nu pot exista două cheltuieli cu aceeași prioritate)
   ====================================================== */
   (function initExpenses() {
     const listEl = document.getElementById('expense-list-numeric');
@@ -183,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const section = document.getElementById('expense-prioritization-section');
     if (!listEl) return;
 
-    // Ordinea corectă (de la cea mai importantă / obligatorie, la cea mai puțin importantă)
     const expenses = [
       { id: 'e1', text: 'Chirie / Rată bancară' },
       { id: 'e2', text: 'Utilități' },
@@ -202,12 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'e15', text: 'Hobby-uri & recreere' },
       { id: 'e16', text: 'Vacanțe & călătorii' },
     ];
-    const correctOrder = expenses.map(e => e.id); // index = poziția corectă (0-based)
+    const correctOrder = expenses.map(e => e.id);
     const textOf = Object.fromEntries(expenses.map(e => [e.id, e.text]));
     const N = expenses.length;
 
-    let displayOrder = []; // ordinea vizuală (fixă, doar amestecată la (re)start)
-    const assigned = {};   // id -> număr ales (1..16) sau null
+    let displayOrder = [];
+    const assigned = {};
 
     function shuffle(arr) {
       const a = [...arr];
@@ -237,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentVal = assigned[id] || '';
         let optionsHTML = `<option value="">-- alege --</option>`;
         for (let n = 1; n <= N; n++) {
-          if (used.has(n) && n !== currentVal) continue; // numărul e deja luat de altă cheltuială
+          if (used.has(n) && n !== currentVal) continue;
           optionsHTML += `<option value="${n}" ${n === currentVal ? 'selected' : ''}>${n}</option>`;
         }
 
@@ -255,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = li.dataset.id;
       const val = parseInt(select.value, 10);
       assigned[id] = isNaN(val) ? null : val;
-      render(); // recalculăm opțiunile disponibile pentru toate celelalte cheltuieli
+      render();
     });
 
     function hideElement(el) { el?.classList.add('hidden'); }
@@ -327,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.addEventListener('click', () => scrollToEl(section));
     resetBtn.addEventListener('click', () => { resetList(); scrollToEl(section); });
 
-    resetList(); // stare inițială: listă amestecată, fără priorități alocate
+    resetList();
   })();
 
   /* ======================================================
@@ -496,7 +490,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderQuestion();
 
-    // ---- Toggle carduri de referință: principii de protecție + resurse ----
     function setupToggle(btnId, contentId, labelClosed, labelOpen) {
       const btn = document.getElementById(btnId);
       const content = document.getElementById(contentId);
@@ -565,13 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-expense-row').addEventListener('click', () => addExpenseRow());
     document.getElementById('add-product-row').addEventListener('click', () => addProductRow());
 
-    // Rânduri inițiale
     addExpenseRow(); addExpenseRow();
     addProductRow();
 
-    // Formatare manuală (nu ne bazăm pe toLocaleString, care pe unele telefoane/
-    // browsere mai vechi ignoră locale-ul 'ro-RO' și arată punct în loc de virgulă).
-    // Rezultat garantat: "1.234,56" — punct la mii, virgulă la zecimale.
     function fmt(n) {
       const negative = n < 0;
       n = Math.abs(Math.round(n * 100) / 100);
@@ -643,9 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
       resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    // Notă: aplicația nu salvează nimic pe telefon — toate datele există doar
-    // cât timp pagina rămâne deschisă (memoria sesiunii curente).
-
     document.getElementById('blitz-reset-btn').addEventListener('click', () => {
       if (!confirm('Sigur resetezi planul de afaceri?')) return;
       document.getElementById('biz-name').value = '';
@@ -666,7 +652,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('blitz-result').classList.add('hidden');
     });
 
-    // ---- Calculator dobândă compusă (economii lunare pe termen lung) ----
     const ciBtn = document.getElementById('ci-calc-btn');
     if (ciBtn) {
       ciBtn.addEventListener('click', () => {
@@ -694,9 +679,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // ---- Convertor valutar: curs BNR (Banca Națională a României), cu rezervă offline ----
-    const fallbackRates = { USD: 4.45, EUR: 4.97 }; // folosit doar dacă BNR nu poate fi accesat
-    let bnrRates = null;  // { USD: x, EUR: y } — populat din cursul zilei BNR
+    const fallbackRates = { USD: 4.45, EUR: 4.97 };
+    let bnrRates = null;
     let bnrDate = null;
 
     async function fetchBnrRates() {
@@ -716,10 +700,10 @@ document.addEventListener('DOMContentLoaded', () => {
           bnrDate = cube ? cube.getAttribute('date') : null;
         }
       } catch (e) {
-        bnrRates = null; // rămânem pe cursul de rezervă
+        bnrRates = null;
       }
     }
-    fetchBnrRates(); // pornește în fundal la deschiderea modulului
+    fetchBnrRates();
 
     const convBtn = document.getElementById('conv-btn');
     if (convBtn) {
@@ -739,7 +723,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // ---- Toggle sfaturi pentru prezentare ----
     const toggleTipsBtn = document.getElementById('toggle-tips-btn');
     if (toggleTipsBtn) {
       toggleTipsBtn.addEventListener('click', () => {
@@ -750,7 +733,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // ---- Toggle forme legale de afacere (PFA / ÎI / SRL) ----
     const toggleLegalBtn = document.getElementById('toggle-legal-btn');
     if (toggleLegalBtn) {
       toggleLegalBtn.addEventListener('click', () => {
@@ -764,21 +746,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ======================================================
      MODUL 5: JURIU (sincronizat live prin Firebase Realtime Database)
-     Fiecare din cei 3 jurați notează SEPARAT, pe propriul telefon, pe propriul
-     ecran de completare, 5 criterii (scară 1-5). Scorurile se scriu direct în
-     Firebase, deci toate telefoanele conectate văd clasamentul actualizat live,
-     în timp real, indiferent cine a notat de pe care dispozitiv.
+     Autentificarea Firebase (anonimă) se face AUTOMAT, fără cod de acces.
+     Numele echipei e normalizat pentru cheia din Firebase: fără sensibilitate
+     la majuscule/minuscule sau diacritice, cu spațiile multiple reduse la
+     unul singur — dar spațiul dintre cuvinte tot contează („Lupii Jurați”
+     rămâne diferit de „LupiiJurați”).
   ====================================================== */
   (function initJury() {
-    const pinView = document.getElementById('jury-pin-view');
     const identityView = document.getElementById('jury-identity-view');
     const selectView = document.getElementById('jury-team-select-view');
-    if (!pinView || !identityView || !selectView) return;
+    if (!identityView || !selectView) return;
     const statusView = document.getElementById('jury-team-status-view');
     const scoringView = document.getElementById('jury-scoring-view');
-
-    // Codul de acces pentru juriu — schimbă-l aici dacă vrei alt cod.
-    const JURY_PIN = 'CEFCA2026';
+    const pinView = document.getElementById('jury-pin-view'); // poate exista în HTML, dar nu mai e folosit
 
     const criteria = [
       { id: 'prezentare', label: 'Calitatea prezentării' },
@@ -798,36 +778,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let db = null;
     let juryRootRef = null;
-    let myJurorNumber = null;   // 1, 2 sau 3 — ales O SINGURĂ DATĂ, rămâne fix toată sesiunea
-    let currentTeam = null;     // numele afișat, ales de utilizator
-    let currentKey = null;      // versiunea „sigură" a numelui, folosită ca și cheie Firebase
+    let myJurorNumber = null;
+    let currentTeam = null;
+    let currentKey = null;
     let currentTeamRef = null;
     let currentTeamListener = null;
-    let latestTeamData = {};    // ultima stare primită de la Firebase pentru echipa curentă
+    let latestTeamData = {};
 
-    function sanitizeKey(name) {
-      return name.replace(/[.#$\[\]/]/g, '_').trim();
+    function normalizeTeamKey(name) {
+      return name
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[.#$\[\]/]/g, '_');
     }
+
     function scoreOptionsHTML() {
       let html = '<option value="">-</option>';
       for (let i = 1; i <= SCALE_MAX; i++) html += `<option value="${i}">${i}</option>`;
       return html;
     }
     function showOnly(view) {
-      [pinView, identityView, selectView, statusView, scoringView].forEach(v => v.classList.add('hidden'));
+      [pinView, identityView, selectView, statusView, scoringView].forEach(v => v?.classList.add('hidden'));
       view.classList.remove('hidden');
     }
 
-    // ---- ECRAN 0: cod de acces + autentificare anonimă Firebase ----
-    document.getElementById('jury-pin-submit-btn').addEventListener('click', () => {
-      const entered = document.getElementById('jury-pin-input').value.trim();
-      const errorEl = document.getElementById('jury-pin-error');
-      if (entered !== JURY_PIN) {
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      errorEl.classList.add('hidden');
-
+    function startJury() {
       firebase.auth().signInAnonymously()
         .then(() => {
           db = firebase.database();
@@ -836,12 +813,12 @@ document.addEventListener('DOMContentLoaded', () => {
           showOnly(identityView);
         })
         .catch(() => {
-          errorEl.textContent = 'Nu ne-am putut conecta (verifică internetul) — încearcă din nou.';
-          errorEl.classList.remove('hidden');
+          document.getElementById('jury-section').insertAdjacentHTML('afterbegin',
+            '<div class="validation-errors">⚠️ Nu ne-am putut conecta (verifică internetul) — reîncarcă pagina și încearcă din nou.</div>');
         });
-    });
+    }
+    startJury();
 
-    // ---- ECRAN 1: alegerea rolului — o singură dată, blocat toată sesiunea ----
     document.querySelectorAll('.jury-identity-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         myJurorNumber = parseInt(btn.dataset.juror, 10);
@@ -850,17 +827,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // ---- ECRAN A: alege/creează echipa ----
     document.getElementById('jury-select-team-btn').addEventListener('click', () => {
       const name = document.getElementById('jury-team-name').value.trim();
       if (!name) { alert('Te rog completează numele echipei.'); return; }
 
       currentTeam = name;
-      currentKey = sanitizeKey(name);
+      currentKey = normalizeTeamKey(name);
       if (currentTeamRef && currentTeamListener) currentTeamRef.off('value', currentTeamListener);
 
       currentTeamRef = juryRootRef.child(currentKey);
-      currentTeamRef.child('name').set(currentTeam);
+      currentTeamRef.child('name').once('value').then((snap) => {
+        if (!snap.exists() || !snap.val()) {
+          currentTeamRef.child('name').set(currentTeam);
+        }
+      });
       currentTeamListener = currentTeamRef.on('value', (snap) => {
         latestTeamData = snap.val() || {};
         if (!statusView.classList.contains('hidden')) renderStatusView();
@@ -870,9 +850,9 @@ document.addEventListener('DOMContentLoaded', () => {
       showOnly(statusView);
     });
 
-    // ---- ECRAN B: status echipă (informativ, toți 3 jurați) + UN SINGUR buton, blocat pe rolul meu ----
     function renderStatusView() {
-      document.getElementById('jury-current-team-title').textContent = `Echipa: ${currentTeam} — tu ești Jurat ${myJurorNumber}`;
+      const displayName = latestTeamData.name || currentTeam;
+      document.getElementById('jury-current-team-title').textContent = `Echipa: ${displayName} — tu ești Jurat ${myJurorNumber}`;
       const wrap = document.getElementById('jury-juror-status-list');
       const scores = latestTeamData.scores || {};
       wrap.innerHTML = [1, 2, 3].map(j => {
@@ -901,7 +881,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showOnly(selectView);
     });
 
-    // ---- ECRAN C: formular de notare, doar pentru juratul curent (myJurorNumber) ----
     function openScoringScreen() {
       document.getElementById('jury-scoring-title').textContent = `Jurat ${myJurorNumber} — evaluează echipa „${currentTeam}"`;
       const wrap = document.getElementById('jury-scoring-criteria');
@@ -928,7 +907,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(() => { alert('Nu s-a putut trimite evaluarea — verifică conexiunea la internet și încearcă din nou.'); });
     });
 
-    // ---- CLASAMENT (live, din Firebase — vede notele de pe toate telefoanele) ----
     function attachLeaderboardListener() {
       juryRootRef.on('value', (snap) => {
       const allTeams = snap.val() || {};
