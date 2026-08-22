@@ -866,6 +866,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
           myJurorNumber = parseInt(num, 10);
+          // Eliberează automat rolul dacă acest telefon se deconectează
+          // (închide tab-ul, pierde internetul, reîncarcă pagina) — evită
+          // blocarea permanentă a rolului și nevoia de reset manual.
+          jurorClaimsRef.child(num).onDisconnect().remove();
           document.getElementById('jury-team-select-title').textContent = `Echipa evaluată (tu ești Jurat ${myJurorNumber})`;
           showOnly(selectView);
         });
