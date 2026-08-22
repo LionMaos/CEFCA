@@ -1003,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('jury-cancel-score-btn').addEventListener('click', () => {
+      renderStatusView();
       showOnly(statusView);
     });
 
@@ -1013,7 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (incomplete) { alert('Te rog completează toate cele 5 criterii înainte de a trimite.'); return; }
 
       currentTeamRef.child('scores/' + myJurorNumber).set(total)
-        .then(() => showOnly(statusView))
+        .then(() => { renderStatusView(); showOnly(statusView); })
         .catch(() => { alert('Nu s-a putut trimite evaluarea — verifică conexiunea la internet și încearcă din nou.'); });
     });
 

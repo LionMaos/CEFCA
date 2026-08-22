@@ -119,6 +119,20 @@ h4 { color: var(--primary-color); margin-top: 20px; margin-bottom: 10px; font-we
 /* Rol de jurat ocupat momentan de alt telefon: rămâne apăsabil (pentru
    preluare dacă rolul e de fapt abandonat), dar vizual arată ca indisponibil. */
 .jury-identity-btn.jury-role-taken { background: #9aa0a6; opacity: 0.75; }
+
+/* Rândurile din Clasament Echipe / Punctaj juriu — fără aceste reguli,
+   numele echipei și detaliile curg lipite pe același rând (ex. "rosii
+   Jurați: ..." arăta ca și cum "Jurați" ar face parte din numele echipei). */
+.jury-leaderboard-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; }
+.jury-leaderboard-row:last-child { border-bottom: none; }
+.jury-leaderboard-row.rank-1 { font-weight: 700; }
+.jury-rank-badge { flex-shrink: 0; min-width: 22px; color: var(--primary-color); }
+.jury-team-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.jury-team-name { font-weight: 700; }
+.jury-leaderboard-row > .jury-team-name { flex: 1; }
+.jury-team-detail { font-size: 0.85em; color: #666; font-weight: 400; }
+.jury-score { flex-shrink: 0; font-weight: 700; color: var(--primary-color); }
+.jury-empty-msg { color: #666; font-style: italic; }
 .main-action-btn:active { transform: scale(0.98); }
 .secondary-action-btn:active { background-color: var(--orange-color); color: var(--light-text); }
 .tertiary-action-btn.back-to-top:active { background-color: #e2e6ea; color: var(--primary-color); }
