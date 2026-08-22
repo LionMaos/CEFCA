@@ -751,6 +751,13 @@ document.addEventListener('DOMContentLoaded', () => {
      la majuscule/minuscule sau diacritice, cu spațiile multiple reduse la
      unul singur — dar spațiul dintre cuvinte tot contează („Lupii Jurați”
      rămâne diferit de „LupiiJurați”).
+
+     Panou ADMIN (protejat cu PIN): permite resetarea completă a clasamentului
+     sau ștergerea unei singure echipe. Butonul "⚙️ Admin" e vizibil în
+     interfață (discret), dar acțiunile necesită introducerea PIN-ului.
+     NOTĂ: acesta este un cod JS executat în browser — un utilizator care
+     inspectează sursa paginii ar putea afla PIN-ul. E o barieră practică,
+     nu o protecție criptografică reală.
   ====================================================== */
   (function initJury() {
     const identityView = document.getElementById('jury-identity-view');
@@ -770,6 +777,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const SCALE_MAX = 5;
     const MAX_TOTAL = criteria.length * SCALE_MAX;
 
+    // ---- Panou admin: schimbă PIN-ul de mai jos cu al tău ----
+    const ADMIN_PIN = '1234';
+
     if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
       document.getElementById('jury-section').insertAdjacentHTML('afterbegin',
         '<div class="validation-errors">⚠️ Modulul de Juriu are nevoie de conexiune la internet ca să sincronizeze notele între telefoane. Verifică conexiunea și reîncarcă pagina.</div>');
@@ -784,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTeamRef = null;
     let currentTeamListener = null;
     let latestTeamData = {};
+    let latestAllTeams = {};
 
     function normalizeTeamKey(name) {
       return name
@@ -810,6 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
           db = firebase.database();
           juryRootRef = db.ref('jury');
           attachLeaderboardListener();
+          ensureAdminButton();
           showOnly(identityView);
         })
         .catch(() => {
@@ -909,7 +921,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function attachLeaderboardListener() {
       juryRootRef.on('value', (snap) => {
-      const allTeams = snap.val() || {};
+      latestAllTeams = snap.val() || {};
+      const allTeams = latestAllTeams;
       const evaluated = Object.values(allTeams)
         .map((teamData) => {
           const scores = teamData.scores || {};
@@ -940,7 +953,81 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="jury-score">${entry.avgScore.toFixed(1)}/${MAX_TOTAL}</span>
         </div>`;
       }).join('');
+
+      renderSimpleLeaderboard(evaluated);
       });
+    }
+
+    function renderSimpleLeaderboard(evaluated) {
+      const elSimple = document.getElementById('jury-leaderboard-simple');
+      if (!elSimple) return;
+      if (!evaluated.length) {
+        elSimple.innerHTML = '<p class="jury-empty-msg">Nicio echipă notată încă.</p>';
+        return;
+      }
+      elSimple.innerHTML = evaluated.map((entry, idx) => `
+        <div class="jury-leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
+          <span class="jury-rank-badge">${idx + 1}.</span>
+          <span class="jury-team-name">${entry.name}</span>
+          <span class="jury-score">${entry.avgScore.toFixed(1)}/${MAX_TOTAL}</span>
+        </div>`).join('');
+    }
+
+    /* ---------- Panou ADMIN (PIN) ---------- */
+    function ensureAdminButton() {
+      let adminBtn = document.getElementById('jury-admin-btn');
+      if (!adminBtn) {
+        // Dacă nu există deja în HTML, îl creăm automat lângă clasament.
+        const leaderboardEl = document.getElementById('jury-leaderboard');
+        const anchor = leaderboardEl ? leaderboardEl.parentElement : document.getElementById('jury-section');
+        adminBtn = document.createElement('button');
+        adminBtn.type = 'button';
+        adminBtn.id = 'jury-admin-btn';
+        adminBtn.textContent = '⚙️ Admin';
+        adminBtn.style.cssText = 'opacity:0.5;font-size:0.8em;margin-top:10px;background:none;border:1px solid #ccc;border-radius:4px;padding:4px 10px;cursor:pointer;';
+        if (anchor) anchor.appendChild(adminBtn);
+      }
+      adminBtn.addEventListener('click', () => {
+        const pin = prompt('Introdu codul PIN de administrator:');
+        if (pin === null) return; // anulat
+        if (pin !== ADMIN_PIN) {
+          alert('PIN incorect.');
+          return;
+        }
+        openAdminMenu();
+      });
+    }
+
+    function openAdminMenu() {
+      const teams = Object.keys(latestAllTeams || {});
+      let msg = 'Panou Admin:\n\n1 = Resetează TOT clasamentul\n';
+      const teamLines = teams.map((key, i) => `${i + 2} = Resetează doar echipa "${latestAllTeams[key].name || key}"`).join('\n');
+      msg += teamLines + (teams.length ? '\n' : '') + '\n0 = Anulează';
+
+      const choice = prompt(msg);
+      if (choice === null || choice === '0' || choice === '') return;
+
+      if (choice === '1') {
+        const confirmReset = confirm('Sigur vrei să ștergi TOATE echipele și notele juraților? Ireversibil!');
+        if (!confirmReset) return;
+        juryRootRef.remove()
+          .then(() => alert('Clasamentul a fost resetat complet.'))
+          .catch(() => alert('Eroare la resetare — verifică conexiunea la internet.'));
+        return;
+      }
+
+      const idx = parseInt(choice, 10) - 2;
+      if (!isNaN(idx) && idx >= 0 && idx < teams.length) {
+        const key = teams[idx];
+        const name = latestAllTeams[key].name || key;
+        const confirmReset = confirm(`Sigur vrei să ștergi echipa "${name}"?`);
+        if (!confirmReset) return;
+        juryRootRef.child(key).remove()
+          .then(() => alert(`Echipa "${name}" a fost ștearsă.`))
+          .catch(() => alert('Eroare la ștergere — verifică conexiunea la internet.'));
+      } else {
+        alert('Opțiune invalidă.');
+      }
     }
   })();
 
