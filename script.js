@@ -789,8 +789,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let db = null;
     let juryRootRef = null;
     let jurorClaimsRef = null;
+    let jurorHeartbeatsRef = null;
     let myJurorNumber = null;
     let myUid = null;
+    let heartbeatIntervalId = null;
+    // Un jurat "activ" trimite un semnal (heartbeat) la fiecare 5s. Rolul lui
+    // e considerat cu adevărat liber abia după 20s fără semnal — astfel o
+    // pierdere scurtă de conexiune (ecran blocat, semnal slab pe telefon) nu
+    // eliberează rolul instant și nu mai apare fals "liber" pentru o clipă.
+    const HEARTBEAT_INTERVAL_MS = 5000;
+    const STALE_THRESHOLD_MS = 20000;
     let currentTeam = null;
     let currentKey = null;
     let currentTeamRef = null;
@@ -825,6 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
           db = firebase.database();
           juryRootRef = db.ref('jury');
           jurorClaimsRef = db.ref('jury/_jurorClaims');
+          jurorHeartbeatsRef = db.ref('jury/_jurorHeartbeats');
           attachLeaderboardListener();
           jurorClaimsRef.on('value', (snap) => {
             currentJurorClaims = snap.val() || {};
@@ -844,61 +853,85 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderIdentityView() {
       document.querySelectorAll('.jury-identity-btn').forEach(btn => {
         const num = btn.dataset.juror;
-        const taken = !!currentJurorClaims[num];
+        const taken = !!currentJurorClaims[num] && currentJurorClaims[num] !== myUid;
         if (taken) {
-          btn.disabled = true;
-          btn.textContent = `Jurat ${num} — deja ales de altcineva`;
+          btn.classList.add('jury-role-taken');
+          btn.textContent = `Jurat ${num} — ocupat momentan`;
         } else {
-          btn.disabled = false;
+          btn.classList.remove('jury-role-taken');
           btn.textContent = `Sunt Jurat ${num}`;
         }
       });
     }
 
-    document.querySelectorAll('.jury-identity-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.disabled) return;
-        const num = btn.dataset.juror;
-        jurorClaimsRef.child(num).transaction((current) => {
-          if (current && current !== myUid) return; // deja rezervat de altcineva -> anulează
-          return myUid; // rezervă (sau reafirmă rezervarea proprie)
-        }, (error, committed) => {
-          if (error) { alert('Eroare la selectarea rolului — verifică conexiunea la internet.'); return; }
-          if (!committed) {
-            alert(`Jurat ${num} tocmai a fost ales de altcineva. Alege alt rol.`);
+    // Trimite un "semnal de viață" periodic pentru rolul ales, cât timp
+    // telefonul e conectat. Alte telefoane folosesc acest semnal ca să
+    // decidă dacă rolul e cu adevărat liber (vezi attemptClaim).
+    function startHeartbeat(num) {
+      if (heartbeatIntervalId) clearInterval(heartbeatIntervalId);
+      const beat = () => jurorHeartbeatsRef.child(num).set(firebase.database.ServerValue.TIMESTAMP).catch(() => {});
+      beat();
+      heartbeatIntervalId = setInterval(beat, HEARTBEAT_INTERVAL_MS);
+    }
+
+    function stopHeartbeat() {
+      if (heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+    }
+
+    function attemptClaim(num) {
+      jurorHeartbeatsRef.child(num).once('value')
+        .then((hbSnap) => {
+          const lastSeen = hbSnap.val();
+          const isStale = !lastSeen || (Date.now() - lastSeen > STALE_THRESHOLD_MS);
+          return jurorClaimsRef.child(num).transaction((current) => {
+            if (current && current !== myUid) {
+              if (isStale) return myUid; // fără semnal de peste 20s -> rolul pare abandonat, poate fi preluat
+              return; // altcineva e activ chiar acum -> anulează
+            }
+            return myUid; // liber sau deja al meu -> rezervă/reafirmă
+          });
+        })
+        .then((result) => {
+          if (!result || !result.committed) {
+            alert(`Jurat ${num} este activ chiar acum pe alt telefon. Așteaptă puțin sau alege alt rol.`);
             return;
           }
           myJurorNumber = parseInt(num, 10);
-          // Eliberează automat rolul dacă acest telefon se deconectează
-          // (închide tab-ul, pierde internetul, reîncarcă pagina) — evită
-          // blocarea permanentă a rolului și nevoia de reset manual.
-          jurorClaimsRef.child(num).onDisconnect().remove();
+          startHeartbeat(num);
           document.getElementById('jury-team-select-title').textContent = `Echipa evaluată (tu ești Jurat ${myJurorNumber})`;
           showOnly(selectView);
+        })
+        .catch(() => {
+          alert('Eroare la selectarea rolului — verifică conexiunea la internet.');
         });
+    }
+
+    document.querySelectorAll('.jury-identity-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const num = btn.dataset.juror;
+        attemptClaim(num);
       });
     });
 
     // La fiecare reconectare (după o pierdere scurtă de semnal), telefonul
-    // încearcă să-și reafirme propriul rol de jurat. Dacă între timp rolul
-    // a fost preluat de altcineva (deconectare reală, nu doar un blip),
-    // juratul e anunțat clar și trimis să aleagă alt rol disponibil —
-    // astfel nu pot exista niciodată doi jurați cu aceeași identitate.
+    // reia trimiterea heartbeat-ului pentru rolul lui. Dacă rolul a fost
+    // preluat între timp de altcineva (pentru că am lipsit cu adevărat mai
+    // mult de 20s), juratul e anunțat clar și trimis să aleagă alt rol
+    // disponibil — astfel nu pot exista niciodată doi jurați cu aceeași
+    // identitate activă simultan.
     function watchConnectionAndReclaim() {
       db.ref('.info/connected').on('value', (snap) => {
         if (snap.val() !== true || myJurorNumber === null) return;
         const num = String(myJurorNumber);
-        jurorClaimsRef.child(num).transaction((current) => {
-          if (current && current !== myUid) return; // altcineva l-a preluat între timp
-          return myUid;
-        }, (error, committed) => {
-          if (error) return;
-          if (committed) {
-            jurorClaimsRef.child(num).onDisconnect().remove();
-          } else {
+        jurorClaimsRef.child(num).once('value').then((claimSnap) => {
+          const current = claimSnap.val();
+          if (current && current !== myUid) {
             myJurorNumber = null;
-            alert(`Conexiunea s-a întrerupt, iar rolul de Jurat ${num} a fost preluat între timp de altcineva. Te rog alege alt rol disponibil.`);
+            stopHeartbeat();
+            alert(`Conexiunea s-a întrerupt prea mult timp, iar rolul de Jurat ${num} a fost preluat între timp de altcineva. Te rog alege alt rol disponibil.`);
             showOnly(identityView);
+          } else {
+            startHeartbeat(num);
           }
         });
       });
@@ -1064,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openAdminMenu() {
-      const teams = Object.keys(latestAllTeams || {}).filter(k => k !== '_jurorClaims');
+      const teams = Object.keys(latestAllTeams || {}).filter(k => k !== '_jurorClaims' && k !== '_jurorHeartbeats');
       let msg = 'Panou Admin:\n\n1 = Resetează TOT clasamentul (și eliberează toți jurații)\n2 = Eliberează un jurat ales greșit\n';
       const teamLines = teams.map((key, i) => `${i + 3} = Resetează doar echipa "${latestAllTeams[key].name || key}"`).join('\n');
       msg += teamLines + (teams.length ? '\n' : '') + '\n0 = Anulează';
@@ -1087,7 +1120,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const releaseChoice = prompt(`Ce jurat vrei să eliberezi?\n\n${claimedNums.map(n => `${n} = Jurat ${n}`).join('\n')}\n\n0 = Anulează`);
         if (!releaseChoice || releaseChoice === '0') return;
         if (claimedNums.includes(releaseChoice)) {
-          jurorClaimsRef.child(releaseChoice).remove()
+          Promise.all([
+            jurorClaimsRef.child(releaseChoice).remove(),
+            jurorHeartbeatsRef.child(releaseChoice).remove()
+          ])
             .then(() => alert(`Jurat ${releaseChoice} a fost eliberat — poate fi ales din nou.`))
             .catch(() => alert('Eroare — verifică conexiunea la internet.'));
         } else {

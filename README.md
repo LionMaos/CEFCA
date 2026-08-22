@@ -19,7 +19,7 @@ Fișiere: `index.html`, `style.css`, `script.js`, `logo.jpg`. Nu necesită build
 
 ## ⚠️ Pași obligatorii: Autentificare + reguli Firebase
 
-Ca notele juriului să nu fie complet publice (oricine cu linkul să poată scrie), am adăugat un cod de acces (PIN). Configurează:
+Modulul 4 folosește autentificare **anonimă** Firebase (fără cod/PIN introdus de jurat) — la deschiderea modulului, telefonul se conectează automat și juratul alege direct „Sunt Jurat 1/2/3". Configurează:
 
 1. **console.firebase.google.com** → proiectul `cefca-juriu`
 2. **Build → Authentication → Get started** → tab **Sign-in method** → activează **Anonymous** → Save
@@ -36,21 +36,24 @@ Ca notele juriului să nu fie complet publice (oricine cu linkul să poată scri
 ```
 4. **Publish**
 
-**Codul de acces implicit e `CEFCA2026`.** Îl schimbi ușor în `script.js`, caută linia:
-```js
-const JURY_PIN = 'CEFCA2026';
-```
-și înlocuiește textul dintre ghilimele cu orice cod vrei. Fiecare jurat introduce acest cod o singură dată, apoi alege „Sunt Jurat 1/2/3" — rămâne blocat pe acel rol tot restul sesiunii (până reîncarcă pagina), ca să nu existe confuzii între jurați.
+**Alegerea rolului de jurat (Jurat 1/2/3):** fiecare rol poate fi ales o singură dată la un moment dat. Dacă un rol pare „ocupat momentan" dar telefonul care-l deține chiar a dispărut (baterie, offline prelungit), oricine poate prelua rolul automat după ~20 de secunde fără semnal de la acel telefon — nu e nevoie de intervenție manuală. O pierdere de conexiune scurtă (ecran blocat, semnal slab) nu eliberează rolul, ca să nu apară confuzii între jurați.
 
-**De ce nu e o parolă „reală":** cineva cu cunoștințe tehnice ar putea ocoli codul din interfață. E suficient de bun pentru un eveniment de notare la clasă (ține afară vizitatorii întâmplători), dar nu e securitate de nivel bancar.
+**Panoul de administrator** (buton discret „⚙️ Admin" în Modulul 4) e protejat separat, cu un PIN de admin, pentru resetarea clasamentului sau eliberarea manuală și instantă a unui rol de jurat ales greșit. Codul de admin implicit e `1234`. Îl schimbi în `script.js`, caută linia:
+```js
+const ADMIN_PIN = '1234';
+```
+și înlocuiește textul dintre ghilimele cu orice cod vrei.
+
+**De ce nu e o securitate „reală":** cineva cu cunoștințe tehnice ar putea afla codul de admin din codul sursă. E suficient de bun pentru un eveniment de notare la clasă (ține afară vizitatorii întâmplători), dar nu e securitate de nivel bancar.
 
 ## Testare Firebase (important)
 
 Integrarea Firebase **nu a putut fi testată live automat** (mediul în care am construit aplicația nu are acces la internet către Google/Firebase). Codul a fost verificat static cu atenție, dar te rog testează manual înainte de eveniment:
-1. Deschide aplicația pe 2 telefoane diferite, introdu codul pe amândouă
+1. Deschide aplicația pe 2 telefoane diferite și intră în Modulul 4 pe amândouă
 2. Pe telefonul 1: alege „Sunt Jurat 1", alege o echipă, completează, trimite
 3. Pe telefonul 2: alege „Sunt Jurat 2", aceeași echipă → ar trebui să vezi imediat „Jurat 1 — ✅" cu scorul lui
 4. Media echipei (Modulul 4, secțiunea Clasament) se calculează din câți jurați au notat (1, 2 sau 3 — nu trebuie neapărat toți 3)
+5. Opțional: pe telefonul 1, activează modul avion ~5 secunde apoi dezactivează-l — rolul „Jurat 1" trebuie să rămână al lui (nu să devină brusc disponibil pe alt telefon)
 
 ## Convertor valutar & calculator dobândă compusă (curs BNR)
 
@@ -71,7 +74,8 @@ Integrarea Firebase **nu a putut fi testată live automat** (mediul în care am 
 - **Ordinea corectă a cheltuielilor**: array-ul `expenses` din Modulul 2 (ordinea din listă = ordinea corectă).
 - **Criteriile juriului**: array-ul `criteria` din Modulul 4 (5 criterii, scară 1-5).
 - **Cursul valutar de rezervă**: obiectul `fallbackRates` din Modulul 3 (folosit doar dacă BNR nu poate fi accesat).
-- **Codul de acces juriu**: constanta `JURY_PIN` din Modulul 4.
+- **Codul de admin**: constanta `ADMIN_PIN` din Modulul 4.
+- **Pragurile de eliberare a rolului de jurat**: constantele `HEARTBEAT_INTERVAL_MS` (cât de des trimite telefonul semnalul „sunt activ", implicit 5000 ms) și `STALE_THRESHOLD_MS` (după cât timp fără semnal un rol poate fi preluat de altcineva, implicit 20000 ms), ambele din Modulul 4.
 
 ## Ce poți edita ușor în `index.html`
 
