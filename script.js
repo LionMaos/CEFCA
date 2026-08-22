@@ -1037,6 +1037,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('jury-leaderboard');
       if (!evaluated.length) {
         el.innerHTML = '<p class="jury-empty-msg">Nicio echipă notată încă.</p>';
+        renderSimpleLeaderboard(evaluated);
         return;
       }
       el.innerHTML = evaluated.map((entry, idx) => {
