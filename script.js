@@ -788,6 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let db = null;
     let juryRootRef = null;
+    let jurorClaimsRef = null;
     let myJurorNumber = null;
     let currentTeam = null;
     let currentKey = null;
@@ -795,6 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTeamListener = null;
     let latestTeamData = {};
     let latestAllTeams = {};
+    let currentJurorClaims = {};
 
     function normalizeTeamKey(name) {
       return name
@@ -820,7 +822,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(() => {
           db = firebase.database();
           juryRootRef = db.ref('jury');
+          jurorClaimsRef = db.ref('juryMeta/jurorClaims');
           attachLeaderboardListener();
+          jurorClaimsRef.on('value', (snap) => {
+            currentJurorClaims = snap.val() || {};
+            renderIdentityView();
+          });
           ensureAdminButton();
           showOnly(identityView);
         })
@@ -831,11 +838,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     startJury();
 
+    function renderIdentityView() {
+      document.querySelectorAll('.jury-identity-btn').forEach(btn => {
+        const num = btn.dataset.juror;
+        const taken = !!currentJurorClaims[num];
+        if (taken) {
+          btn.disabled = true;
+          btn.textContent = `Jurat ${num} — deja ales de altcineva`;
+        } else {
+          btn.disabled = false;
+          btn.textContent = `Sunt Jurat ${num}`;
+        }
+      });
+    }
+
     document.querySelectorAll('.jury-identity-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        myJurorNumber = parseInt(btn.dataset.juror, 10);
-        document.getElementById('jury-team-select-title').textContent = `Echipa evaluată (tu ești Jurat ${myJurorNumber})`;
-        showOnly(selectView);
+        if (btn.disabled) return;
+        const num = btn.dataset.juror;
+        jurorClaimsRef.child(num).transaction((current) => {
+          if (current) return; // deja rezervat de altcineva -> anulează
+          return true;
+        }, (error, committed) => {
+          if (error) { alert('Eroare la selectarea rolului — verifică conexiunea la internet.'); return; }
+          if (!committed) {
+            alert(`Jurat ${num} tocmai a fost ales de altcineva. Alege alt rol.`);
+            return;
+          }
+          myJurorNumber = parseInt(num, 10);
+          document.getElementById('jury-team-select-title').textContent = `Echipa evaluată (tu ești Jurat ${myJurorNumber})`;
+          showOnly(selectView);
+        });
       });
     });
 
@@ -1000,23 +1033,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openAdminMenu() {
       const teams = Object.keys(latestAllTeams || {});
-      let msg = 'Panou Admin:\n\n1 = Resetează TOT clasamentul\n';
-      const teamLines = teams.map((key, i) => `${i + 2} = Resetează doar echipa "${latestAllTeams[key].name || key}"`).join('\n');
+      let msg = 'Panou Admin:\n\n1 = Resetează TOT clasamentul (și eliberează toți jurații)\n2 = Eliberează un jurat ales greșit\n';
+      const teamLines = teams.map((key, i) => `${i + 3} = Resetează doar echipa "${latestAllTeams[key].name || key}"`).join('\n');
       msg += teamLines + (teams.length ? '\n' : '') + '\n0 = Anulează';
 
       const choice = prompt(msg);
       if (choice === null || choice === '0' || choice === '') return;
 
       if (choice === '1') {
-        const confirmReset = confirm('Sigur vrei să ștergi TOATE echipele și notele juraților? Ireversibil!');
+        const confirmReset = confirm('Sigur vrei să ștergi TOATE echipele, notele juraților ȘI să eliberezi toți jurații? Ireversibil!');
         if (!confirmReset) return;
-        juryRootRef.remove()
-          .then(() => alert('Clasamentul a fost resetat complet.'))
+        Promise.all([juryRootRef.remove(), jurorClaimsRef.remove()])
+          .then(() => alert('Clasamentul a fost resetat complet și toți jurații au fost eliberați.'))
           .catch(() => alert('Eroare la resetare — verifică conexiunea la internet.'));
         return;
       }
 
-      const idx = parseInt(choice, 10) - 2;
+      if (choice === '2') {
+        const claimedNums = Object.keys(currentJurorClaims || {}).filter(n => currentJurorClaims[n]);
+        if (!claimedNums.length) { alert('Niciun jurat nu e ocupat momentan.'); return; }
+        const releaseChoice = prompt(`Ce jurat vrei să eliberezi?\n\n${claimedNums.map(n => `${n} = Jurat ${n}`).join('\n')}\n\n0 = Anulează`);
+        if (!releaseChoice || releaseChoice === '0') return;
+        if (claimedNums.includes(releaseChoice)) {
+          jurorClaimsRef.child(releaseChoice).remove()
+            .then(() => alert(`Jurat ${releaseChoice} a fost eliberat — poate fi ales din nou.`))
+            .catch(() => alert('Eroare — verifică conexiunea la internet.'));
+        } else {
+          alert('Opțiune invalidă.');
+        }
+        return;
+      }
+
+      const idx = parseInt(choice, 10) - 3;
       if (!isNaN(idx) && idx >= 0 && idx < teams.length) {
         const key = teams[idx];
         const name = latestAllTeams[key].name || key;
