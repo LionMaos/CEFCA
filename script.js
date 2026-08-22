@@ -790,6 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let juryRootRef = null;
     let jurorClaimsRef = null;
     let myJurorNumber = null;
+    let myUid = null;
     let currentTeam = null;
     let currentKey = null;
     let currentTeamRef = null;
@@ -819,7 +820,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startJury() {
       firebase.auth().signInAnonymously()
-        .then(() => {
+        .then((cred) => {
+          myUid = cred.user.uid;
           db = firebase.database();
           juryRootRef = db.ref('jury');
           jurorClaimsRef = db.ref('jury/_jurorClaims');
@@ -828,6 +830,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentJurorClaims = snap.val() || {};
             renderIdentityView();
           });
+          watchConnectionAndReclaim();
           ensureAdminButton();
           showOnly(identityView);
         })
@@ -857,8 +860,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn.disabled) return;
         const num = btn.dataset.juror;
         jurorClaimsRef.child(num).transaction((current) => {
-          if (current) return; // deja rezervat de altcineva -> anulează
-          return true;
+          if (current && current !== myUid) return; // deja rezervat de altcineva -> anulează
+          return myUid; // rezervă (sau reafirmă rezervarea proprie)
         }, (error, committed) => {
           if (error) { alert('Eroare la selectarea rolului — verifică conexiunea la internet.'); return; }
           if (!committed) {
@@ -875,6 +878,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
     });
+
+    // La fiecare reconectare (după o pierdere scurtă de semnal), telefonul
+    // încearcă să-și reafirme propriul rol de jurat. Dacă între timp rolul
+    // a fost preluat de altcineva (deconectare reală, nu doar un blip),
+    // juratul e anunțat clar și trimis să aleagă alt rol disponibil —
+    // astfel nu pot exista niciodată doi jurați cu aceeași identitate.
+    function watchConnectionAndReclaim() {
+      db.ref('.info/connected').on('value', (snap) => {
+        if (snap.val() !== true || myJurorNumber === null) return;
+        const num = String(myJurorNumber);
+        jurorClaimsRef.child(num).transaction((current) => {
+          if (current && current !== myUid) return; // altcineva l-a preluat între timp
+          return myUid;
+        }, (error, committed) => {
+          if (error) return;
+          if (committed) {
+            jurorClaimsRef.child(num).onDisconnect().remove();
+          } else {
+            myJurorNumber = null;
+            alert(`Conexiunea s-a întrerupt, iar rolul de Jurat ${num} a fost preluat între timp de altcineva. Te rog alege alt rol disponibil.`);
+            showOnly(identityView);
+          }
+        });
+      });
+    }
 
     document.getElementById('jury-select-team-btn').addEventListener('click', () => {
       const name = document.getElementById('jury-team-name').value.trim();
