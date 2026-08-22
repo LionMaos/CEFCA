@@ -822,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(() => {
           db = firebase.database();
           juryRootRef = db.ref('jury');
-          jurorClaimsRef = db.ref('juryMeta/jurorClaims');
+          jurorClaimsRef = db.ref('jury/_jurorClaims');
           attachLeaderboardListener();
           jurorClaimsRef.on('value', (snap) => {
             currentJurorClaims = snap.val() || {};
@@ -1032,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openAdminMenu() {
-      const teams = Object.keys(latestAllTeams || {});
+      const teams = Object.keys(latestAllTeams || {}).filter(k => k !== '_jurorClaims');
       let msg = 'Panou Admin:\n\n1 = Resetează TOT clasamentul (și eliberează toți jurații)\n2 = Eliberează un jurat ales greșit\n';
       const teamLines = teams.map((key, i) => `${i + 3} = Resetează doar echipa "${latestAllTeams[key].name || key}"`).join('\n');
       msg += teamLines + (teams.length ? '\n' : '') + '\n0 = Anulează';
@@ -1043,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (choice === '1') {
         const confirmReset = confirm('Sigur vrei să ștergi TOATE echipele, notele juraților ȘI să eliberezi toți jurații? Ireversibil!');
         if (!confirmReset) return;
-        Promise.all([juryRootRef.remove(), jurorClaimsRef.remove()])
+        juryRootRef.remove()
           .then(() => alert('Clasamentul a fost resetat complet și toți jurații au fost eliberați.'))
           .catch(() => alert('Eroare la resetare — verifică conexiunea la internet.'));
         return;
