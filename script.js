@@ -640,6 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('biz-description').value = '';
       document.getElementById('biz-capital').value = '';
       document.getElementById('conv-amount').value = '';
+      if (document.getElementById('conv-pair')) { document.getElementById('conv-pair').selectedIndex = 0; document.getElementById('conv-rate').value = fmtRate(defaultRates[document.getElementById('conv-pair').value.split('-')[0]]); }
       document.getElementById('conv-result').classList.add('hidden');
       document.getElementById('ci-monthly').value = '';
       document.getElementById('ci-years').value = '';
@@ -679,45 +680,49 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const fallbackRates = { USD: 4.45, EUR: 4.97 };
-    let bnrRates = null;
-    let bnrDate = null;
-
-    async function fetchBnrRates() {
-      try {
-        const res = await fetch('https://www.bnr.ro/nbrfxrates.xml');
-        if (!res.ok) throw new Error('BNR fetch failed');
-        const text = await res.text();
-        const xml = new DOMParser().parseFromString(text, 'application/xml');
-        const cube = xml.querySelector('Cube');
-        const rates = {};
-        xml.querySelectorAll('Rate').forEach(r => {
-          const code = r.getAttribute('currency');
-          if (code === 'USD' || code === 'EUR') rates[code] = parseFloat(r.textContent);
-        });
-        if (rates.USD && rates.EUR) {
-          bnrRates = rates;
-          bnrDate = cube ? cube.getAttribute('date') : null;
-        }
-      } catch (e) {
-        bnrRates = null;
-      }
-    }
-    fetchBnrRates();
-
+    // ---- Convertor valutar: cursul de schimb îl introduce utilizatorul ----
+    // Valorile de mai jos sunt doar orientative (completate în câmpul "Curs de schimb"
+    // și pot fi schimbate oricând de utilizator).
+    const defaultRates = { EUR: 5.05, USD: 4.35 };
+    const convPairEl = document.getElementById('conv-pair');
+    const convRateEl = document.getElementById('conv-rate');
     const convBtn = document.getElementById('conv-btn');
+
+    // acceptă și virgula zecimală ("5,05") și punctul ("5.05")
+    function parseRate(v) { return parseFloat(String(v).trim().replace(',', '.')) || 0; }
+
+    function fmtRate(r) {
+      let s = r.toFixed(4).replace(/0+$/, '');
+      if (/\.\d$/.test(s)) s += '0';
+      return s.replace('.', ',');
+    }
+
+    if (convPairEl && convRateEl) {
+      convRateEl.value = fmtRate(defaultRates[convPairEl.value.split('-')[0]]);
+      // cursul aparține monedei: la schimbarea monedei revenim la cursul orientativ al ei
+      convPairEl.addEventListener('change', () => {
+        convRateEl.value = fmtRate(defaultRates[convPairEl.value.split('-')[0]]);
+      });
+    }
+
     if (convBtn) {
       convBtn.addEventListener('click', () => {
         const amount = parseFloat(document.getElementById('conv-amount').value) || 0;
-        const pair = document.getElementById('conv-pair').value;
-        const [from] = pair.split('-');
-        const rate = bnrRates ? bnrRates[from] : fallbackRates[from];
-        const converted = amount * rate;
+        const rate = parseRate(convRateEl.value);
+        const from = convPairEl.value.split('-')[0];
         const convResult = document.getElementById('conv-result');
-        const sourceNote = bnrRates
-          ? `curs BNR din ${bnrDate}`
-          : `curs orientativ de rezervă (cursul live BNR nu a putut fi accesat)`;
-        convResult.textContent = `${fmt(amount)} ${from} = ${fmt(converted)} lei — 1 ${from} = ${rate.toFixed(4)} lei (${sourceNote}) → completat automat mai jos, la Capital inițial`;
+        if (amount <= 0) {
+          convResult.textContent = 'Introdu suma pe care vrei să o convertești.';
+          convResult.classList.remove('hidden');
+          return;
+        }
+        if (rate <= 0) {
+          convResult.textContent = 'Introdu cursul de schimb (câți lei costă 1 ' + from + ').';
+          convResult.classList.remove('hidden');
+          return;
+        }
+        const converted = amount * rate;
+        convResult.textContent = `${fmt(amount)} ${from} × ${fmtRate(rate)} lei = ${fmt(converted)} lei (la cursul introdus de tine) → completat automat mai jos, la Capital inițial`;
         convResult.classList.remove('hidden');
         document.getElementById('biz-capital').value = (Math.round(converted * 100) / 100);
       });
@@ -741,411 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
         content.classList.toggle('hidden');
         toggleLegalBtn.textContent = isHidden ? '💼 Ascunde' : '💼 Ce formă legală poate avea o afacere?';
       });
-    }
-  })();
-
-  /* ======================================================
-     MODUL 5: JURIU (sincronizat live prin Firebase Realtime Database)
-     Autentificarea Firebase (anonimă) se face AUTOMAT, fără cod de acces.
-     Numele echipei e normalizat pentru cheia din Firebase: fără sensibilitate
-     la majuscule/minuscule sau diacritice, cu spațiile multiple reduse la
-     unul singur — dar spațiul dintre cuvinte tot contează („Lupii Jurați”
-     rămâne diferit de „LupiiJurați”).
-
-     Panou ADMIN (protejat cu PIN): permite resetarea completă a clasamentului
-     sau ștergerea unei singure echipe. Butonul "⚙️ Admin" e vizibil în
-     interfață (discret), dar acțiunile necesită introducerea PIN-ului.
-     NOTĂ: acesta este un cod JS executat în browser — un utilizator care
-     inspectează sursa paginii ar putea afla PIN-ul. E o barieră practică,
-     nu o protecție criptografică reală.
-  ====================================================== */
-  (function initJury() {
-    const identityView = document.getElementById('jury-identity-view');
-    const selectView = document.getElementById('jury-team-select-view');
-    if (!identityView || !selectView) return;
-    const statusView = document.getElementById('jury-team-status-view');
-    const scoringView = document.getElementById('jury-scoring-view');
-    const pinView = document.getElementById('jury-pin-view'); // poate exista în HTML, dar nu mai e folosit
-
-    const criteria = [
-      { id: 'prezentare', label: 'Calitatea prezentării' },
-      { id: 'eficienta', label: 'Eficiența afacerii' },
-      { id: 'realism', label: 'Nivelul de realism al implementării' },
-      { id: 'originalitate', label: 'Originalitatea ideii' },
-      { id: 'echipa', label: 'Lucrul în echipă & răspunsuri la întrebări' },
-    ];
-    const SCALE_MAX = 5;
-    const MAX_TOTAL = criteria.length * SCALE_MAX;
-
-    // ---- Panou admin: schimbă PIN-ul de mai jos cu al tău ----
-    const ADMIN_PIN = '1234';
-
-    if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
-      document.getElementById('jury-section').insertAdjacentHTML('afterbegin',
-        '<div class="validation-errors">⚠️ Modulul de Juriu are nevoie de conexiune la internet ca să sincronizeze notele între telefoane. Verifică conexiunea și reîncarcă pagina.</div>');
-      return;
-    }
-
-    let db = null;
-    let juryRootRef = null;
-    let jurorClaimsRef = null;
-    let jurorHeartbeatsRef = null;
-    let myJurorNumber = null;
-    let myUid = null;
-    let heartbeatIntervalId = null;
-    // Un jurat "activ" trimite un semnal (heartbeat) la fiecare 5s. Rolul lui
-    // e considerat cu adevărat liber abia după 20s fără semnal — astfel o
-    // pierdere scurtă de conexiune (ecran blocat, semnal slab pe telefon) nu
-    // eliberează rolul instant și nu mai apare fals "liber" pentru o clipă.
-    const HEARTBEAT_INTERVAL_MS = 5000;
-    const STALE_THRESHOLD_MS = 20000;
-    let currentTeam = null;
-    let currentKey = null;
-    let currentTeamRef = null;
-    let currentTeamListener = null;
-    let latestTeamData = {};
-    let latestAllTeams = {};
-    let currentJurorClaims = {};
-
-    function normalizeTeamKey(name) {
-      return name
-        .trim()
-        .replace(/\s+/g, ' ')
-        .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[.#$\[\]/]/g, '_');
-    }
-
-    function scoreOptionsHTML() {
-      let html = '<option value="">-</option>';
-      for (let i = 1; i <= SCALE_MAX; i++) html += `<option value="${i}">${i}</option>`;
-      return html;
-    }
-    function showOnly(view) {
-      [pinView, identityView, selectView, statusView, scoringView].forEach(v => v?.classList.add('hidden'));
-      view.classList.remove('hidden');
-    }
-
-    function startJury() {
-      firebase.auth().signInAnonymously()
-        .then((cred) => {
-          myUid = cred.user.uid;
-          db = firebase.database();
-          juryRootRef = db.ref('jury');
-          jurorClaimsRef = db.ref('jury/_jurorClaims');
-          jurorHeartbeatsRef = db.ref('jury/_jurorHeartbeats');
-          attachLeaderboardListener();
-          jurorClaimsRef.on('value', (snap) => {
-            currentJurorClaims = snap.val() || {};
-            renderIdentityView();
-          });
-          watchConnectionAndReclaim();
-          ensureAdminButton();
-          showOnly(identityView);
-        })
-        .catch(() => {
-          document.getElementById('jury-section').insertAdjacentHTML('afterbegin',
-            '<div class="validation-errors">⚠️ Nu ne-am putut conecta (verifică internetul) — reîncarcă pagina și încearcă din nou.</div>');
-        });
-    }
-    startJury();
-
-    function renderIdentityView() {
-      document.querySelectorAll('.jury-identity-btn').forEach(btn => {
-        const num = btn.dataset.juror;
-        const taken = !!currentJurorClaims[num] && currentJurorClaims[num] !== myUid;
-        if (taken) {
-          btn.classList.add('jury-role-taken');
-          btn.textContent = `Jurat ${num} — ocupat momentan`;
-        } else {
-          btn.classList.remove('jury-role-taken');
-          btn.textContent = `Sunt Jurat ${num}`;
-        }
-      });
-    }
-
-    // Trimite un "semnal de viață" periodic pentru rolul ales, cât timp
-    // telefonul e conectat. Alte telefoane folosesc acest semnal ca să
-    // decidă dacă rolul e cu adevărat liber (vezi attemptClaim).
-    function startHeartbeat(num) {
-      if (heartbeatIntervalId) clearInterval(heartbeatIntervalId);
-      const beat = () => jurorHeartbeatsRef.child(num).set(firebase.database.ServerValue.TIMESTAMP).catch(() => {});
-      beat();
-      heartbeatIntervalId = setInterval(beat, HEARTBEAT_INTERVAL_MS);
-    }
-
-    function stopHeartbeat() {
-      if (heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-    }
-
-    function attemptClaim(num) {
-      jurorHeartbeatsRef.child(num).once('value')
-        .then((hbSnap) => {
-          const lastSeen = hbSnap.val();
-          const isStale = !lastSeen || (Date.now() - lastSeen > STALE_THRESHOLD_MS);
-          return jurorClaimsRef.child(num).transaction((current) => {
-            if (current && current !== myUid) {
-              if (isStale) return myUid; // fără semnal de peste 20s -> rolul pare abandonat, poate fi preluat
-              return; // altcineva e activ chiar acum -> anulează
-            }
-            return myUid; // liber sau deja al meu -> rezervă/reafirmă
-          });
-        })
-        .then((result) => {
-          if (!result || !result.committed) {
-            alert(`Jurat ${num} este activ chiar acum pe alt telefon. Așteaptă puțin sau alege alt rol.`);
-            return;
-          }
-          myJurorNumber = parseInt(num, 10);
-          startHeartbeat(num);
-          document.getElementById('jury-team-select-title').textContent = `Echipa evaluată (tu ești Jurat ${myJurorNumber})`;
-          showOnly(selectView);
-        })
-        .catch(() => {
-          alert('Eroare la selectarea rolului — verifică conexiunea la internet.');
-        });
-    }
-
-    document.querySelectorAll('.jury-identity-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const num = btn.dataset.juror;
-        attemptClaim(num);
-      });
-    });
-
-    // La fiecare reconectare (după o pierdere scurtă de semnal), telefonul
-    // reia trimiterea heartbeat-ului pentru rolul lui. Dacă rolul a fost
-    // preluat între timp de altcineva (pentru că am lipsit cu adevărat mai
-    // mult de 20s), juratul e anunțat clar și trimis să aleagă alt rol
-    // disponibil — astfel nu pot exista niciodată doi jurați cu aceeași
-    // identitate activă simultan.
-    function watchConnectionAndReclaim() {
-      db.ref('.info/connected').on('value', (snap) => {
-        if (snap.val() !== true || myJurorNumber === null) return;
-        const num = String(myJurorNumber);
-        jurorClaimsRef.child(num).once('value').then((claimSnap) => {
-          const current = claimSnap.val();
-          if (current && current !== myUid) {
-            myJurorNumber = null;
-            stopHeartbeat();
-            alert(`Conexiunea s-a întrerupt prea mult timp, iar rolul de Jurat ${num} a fost preluat între timp de altcineva. Te rog alege alt rol disponibil.`);
-            showOnly(identityView);
-          } else {
-            startHeartbeat(num);
-          }
-        });
-      });
-    }
-
-    document.getElementById('jury-select-team-btn').addEventListener('click', () => {
-      const name = document.getElementById('jury-team-name').value.trim();
-      if (!name) { alert('Te rog completează numele echipei.'); return; }
-
-      currentTeam = name;
-      currentKey = normalizeTeamKey(name);
-      if (currentTeamRef && currentTeamListener) currentTeamRef.off('value', currentTeamListener);
-
-      currentTeamRef = juryRootRef.child(currentKey);
-      currentTeamRef.child('name').once('value').then((snap) => {
-        if (!snap.exists() || !snap.val()) {
-          currentTeamRef.child('name').set(currentTeam);
-        }
-      });
-      currentTeamListener = currentTeamRef.on('value', (snap) => {
-        latestTeamData = snap.val() || {};
-        if (!statusView.classList.contains('hidden')) renderStatusView();
-      });
-
-      renderStatusView();
-      showOnly(statusView);
-    });
-
-    function renderStatusView() {
-      const displayName = latestTeamData.name || currentTeam;
-      document.getElementById('jury-current-team-title').textContent = `Echipa: ${displayName} — tu ești Jurat ${myJurorNumber}`;
-      const wrap = document.getElementById('jury-juror-status-list');
-      const scores = latestTeamData.scores || {};
-      wrap.innerHTML = [1, 2, 3].map(j => {
-        const val = scores[j];
-        const done = val !== undefined && val !== null;
-        const meTag = j === myJurorNumber ? ' (tu)' : '';
-        return `
-        <div class="jury-criteria-row">
-          <label>Jurat ${j}${meTag} ${done ? `— ✅ ${val}/${MAX_TOTAL}` : '— ⏳ neevaluat'}</label>
-        </div>`;
-      }).join('');
-
-      const myDone = scores[myJurorNumber] !== undefined && scores[myJurorNumber] !== null;
-      const myBtn = document.getElementById('jury-my-score-btn');
-      myBtn.textContent = myDone ? `Refă evaluarea ta (Jurat ${myJurorNumber})` : `Completează ca Jurat ${myJurorNumber}`;
-    }
-
-    document.getElementById('jury-my-score-btn').addEventListener('click', () => {
-      openScoringScreen();
-    });
-
-    document.getElementById('jury-change-team-btn').addEventListener('click', () => {
-      if (currentTeamRef && currentTeamListener) currentTeamRef.off('value', currentTeamListener);
-      currentTeam = null; currentKey = null; currentTeamRef = null; currentTeamListener = null;
-      document.getElementById('jury-team-name').value = '';
-      showOnly(selectView);
-    });
-
-    function openScoringScreen() {
-      document.getElementById('jury-scoring-title').textContent = `Jurat ${myJurorNumber} — evaluează echipa „${currentTeam}"`;
-      const wrap = document.getElementById('jury-scoring-criteria');
-      wrap.innerHTML = criteria.map(c => `
-        <div class="jury-criteria-row">
-          <label>${c.label}</label>
-          <select class="jury-score-select" data-criterion="${c.id}">${scoreOptionsHTML()}</select>
-        </div>`).join('');
-      showOnly(scoringView);
-    }
-
-    document.getElementById('jury-cancel-score-btn').addEventListener('click', () => {
-      renderStatusView();
-      showOnly(statusView);
-    });
-
-    document.getElementById('jury-submit-score-btn').addEventListener('click', () => {
-      const selects = document.querySelectorAll('#jury-scoring-criteria .jury-score-select');
-      let total = 0, incomplete = false;
-      selects.forEach(s => { if (!s.value) incomplete = true; total += parseInt(s.value, 10) || 0; });
-      if (incomplete) { alert('Te rog completează toate cele 5 criterii înainte de a trimite.'); return; }
-
-      currentTeamRef.child('scores/' + myJurorNumber).set(total)
-        .then(() => { renderStatusView(); showOnly(statusView); })
-        .catch(() => { alert('Nu s-a putut trimite evaluarea — verifică conexiunea la internet și încearcă din nou.'); });
-    });
-
-    function attachLeaderboardListener() {
-      juryRootRef.on('value', (snap) => {
-      latestAllTeams = snap.val() || {};
-      const allTeams = latestAllTeams;
-      const evaluated = Object.values(allTeams)
-        .map((teamData) => {
-          const scores = teamData.scores || {};
-          const scored = [1, 2, 3].filter(j => scores[j] !== undefined && scores[j] !== null);
-          if (!scored.length) return null;
-          const totals = scored.map(j => scores[j]);
-          const avgScore = totals.reduce((a, b) => a + b, 0) / totals.length;
-          return { name: teamData.name, scores, scoredCount: scored.length, avgScore };
-        })
-        .filter(Boolean)
-        .sort((a, b) => b.avgScore - a.avgScore);
-
-      const el = document.getElementById('jury-leaderboard');
-      if (!evaluated.length) {
-        el.innerHTML = '<p class="jury-empty-msg">Nicio echipă notată încă.</p>';
-        renderSimpleLeaderboard(evaluated);
-        return;
-      }
-      el.innerHTML = evaluated.map((entry, idx) => {
-        const detail = [1, 2, 3].map(j => (entry.scores[j] === undefined || entry.scores[j] === null) ? '—' : entry.scores[j]).join(' / ');
-        const partialNote = entry.scoredCount < 3 ? ` · scor parțial (${entry.scoredCount}/3 jurați)` : '';
-        return `
-        <div class="jury-leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
-          <span class="jury-rank-badge">${idx + 1}.</span>
-          <span class="jury-team-info">
-            <span class="jury-team-name">${entry.name}</span>
-            <span class="jury-team-detail">Jurați: ${detail} (din ${MAX_TOTAL} fiecare)${partialNote}</span>
-          </span>
-          <span class="jury-score">${entry.avgScore.toFixed(1)}/${MAX_TOTAL}</span>
-        </div>`;
-      }).join('');
-
-      renderSimpleLeaderboard(evaluated);
-      });
-    }
-
-    function renderSimpleLeaderboard(evaluated) {
-      const elSimple = document.getElementById('jury-leaderboard-simple');
-      if (!elSimple) return;
-      if (!evaluated.length) {
-        elSimple.innerHTML = '<p class="jury-empty-msg">Nicio echipă notată încă.</p>';
-        return;
-      }
-      elSimple.innerHTML = evaluated.map((entry, idx) => `
-        <div class="jury-leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
-          <span class="jury-rank-badge">${idx + 1}.</span>
-          <span class="jury-team-name">${entry.name}</span>
-          <span class="jury-score">${entry.avgScore.toFixed(1)}/${MAX_TOTAL}</span>
-        </div>`).join('');
-    }
-
-    /* ---------- Panou ADMIN (PIN) ---------- */
-    function ensureAdminButton() {
-      let adminBtn = document.getElementById('jury-admin-btn');
-      if (!adminBtn) {
-        // Dacă nu există deja în HTML, îl creăm automat lângă clasament.
-        const leaderboardEl = document.getElementById('jury-leaderboard');
-        const anchor = leaderboardEl ? leaderboardEl.parentElement : document.getElementById('jury-section');
-        adminBtn = document.createElement('button');
-        adminBtn.type = 'button';
-        adminBtn.id = 'jury-admin-btn';
-        adminBtn.textContent = '⚙️ Admin';
-        adminBtn.style.cssText = 'opacity:0.5;font-size:0.8em;margin-top:10px;background:none;border:1px solid #ccc;border-radius:4px;padding:4px 10px;cursor:pointer;';
-        if (anchor) anchor.appendChild(adminBtn);
-      }
-      adminBtn.addEventListener('click', () => {
-        const pin = prompt('Introdu codul PIN de administrator:');
-        if (pin === null) return; // anulat
-        if (pin !== ADMIN_PIN) {
-          alert('PIN incorect.');
-          return;
-        }
-        openAdminMenu();
-      });
-    }
-
-    function openAdminMenu() {
-      const teams = Object.keys(latestAllTeams || {}).filter(k => k !== '_jurorClaims' && k !== '_jurorHeartbeats');
-      let msg = 'Panou Admin:\n\n1 = Resetează TOT clasamentul (și eliberează toți jurații)\n2 = Eliberează un jurat ales greșit\n';
-      const teamLines = teams.map((key, i) => `${i + 3} = Resetează doar echipa "${latestAllTeams[key].name || key}"`).join('\n');
-      msg += teamLines + (teams.length ? '\n' : '') + '\n0 = Anulează';
-
-      const choice = prompt(msg);
-      if (choice === null || choice === '0' || choice === '') return;
-
-      if (choice === '1') {
-        const confirmReset = confirm('Sigur vrei să ștergi TOATE echipele, notele juraților ȘI să eliberezi toți jurații? Ireversibil!');
-        if (!confirmReset) return;
-        juryRootRef.remove()
-          .then(() => alert('Clasamentul a fost resetat complet și toți jurații au fost eliberați.'))
-          .catch(() => alert('Eroare la resetare — verifică conexiunea la internet.'));
-        return;
-      }
-
-      if (choice === '2') {
-        const claimedNums = Object.keys(currentJurorClaims || {}).filter(n => currentJurorClaims[n]);
-        if (!claimedNums.length) { alert('Niciun jurat nu e ocupat momentan.'); return; }
-        const releaseChoice = prompt(`Ce jurat vrei să eliberezi?\n\n${claimedNums.map(n => `${n} = Jurat ${n}`).join('\n')}\n\n0 = Anulează`);
-        if (!releaseChoice || releaseChoice === '0') return;
-        if (claimedNums.includes(releaseChoice)) {
-          Promise.all([
-            jurorClaimsRef.child(releaseChoice).remove(),
-            jurorHeartbeatsRef.child(releaseChoice).remove()
-          ])
-            .then(() => alert(`Jurat ${releaseChoice} a fost eliberat — poate fi ales din nou.`))
-            .catch(() => alert('Eroare — verifică conexiunea la internet.'));
-        } else {
-          alert('Opțiune invalidă.');
-        }
-        return;
-      }
-
-      const idx = parseInt(choice, 10) - 3;
-      if (!isNaN(idx) && idx >= 0 && idx < teams.length) {
-        const key = teams[idx];
-        const name = latestAllTeams[key].name || key;
-        const confirmReset = confirm(`Sigur vrei să ștergi echipa "${name}"?`);
-        if (!confirmReset) return;
-        juryRootRef.child(key).remove()
-          .then(() => alert(`Echipa "${name}" a fost ștearsă.`))
-          .catch(() => alert('Eroare la ștergere — verifică conexiunea la internet.'));
-      } else {
-        alert('Opțiune invalidă.');
-      }
     }
   })();
 

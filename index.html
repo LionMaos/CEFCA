@@ -45,13 +45,6 @@
         <span class="menu-desc">Construiește un plan de afaceri rapid și calculează-ți profitul</span>
       </span>
     </button>
-    <button class="menu-card" data-target="view-jury">
-      <span class="menu-icon">⚖️</span>
-      <span class="menu-card-text">
-        <span class="menu-title">Modul 4 · Jurizare</span>
-        <span class="menu-desc">Cei 3 membri ai juriului notează echipele care își prezintă afacerea</span>
-      </span>
-    </button>
   </nav>
 
   <!-- ================= SUBMENIU MODUL 1: CARIERĂ ================= -->
@@ -393,13 +386,16 @@
 
         <div class="currency-converter">
           <h4>💱 Convertor valutar (pentru capital)</h4>
-          <p class="converter-hint">Folosește cursul zilei publicat de Banca Națională a României (BNR). Ai capitalul în altă monedă? Convertește-l în lei — se completează automat mai jos.</p>
+          <p class="converter-hint">Ai capitalul în altă monedă? Scrie suma și cursul de schimb (câți lei costă 1 unitate din moneda aleasă — îl găsești la bancă sau la o casă de schimb), iar suma în lei se completează automat mai jos.</p>
           <div class="converter-row">
             <input type="number" id="conv-amount" min="0" step="0.01" placeholder="Sumă">
             <select id="conv-pair">
               <option value="EUR-RON">EUR → RON</option>
               <option value="USD-RON">USD → RON</option>
             </select>
+            <label class="conv-label">Curs de schimb (lei pentru 1 unitate) — poți modifica valoarea orientativă
+              <input type="text" id="conv-rate" inputmode="decimal" autocomplete="off" placeholder="ex: 5,05">
+            </label>
             <button type="button" id="conv-btn" class="secondary-action-btn">Convertește</button>
           </div>
           <div id="conv-result" class="converter-result hidden"></div>
@@ -492,100 +488,8 @@
     </section>
   </section>
 
-  <!-- ================= JURIU ================= -->
-  <section id="view-jury" class="app-view hidden">
-    <button class="back-btn" data-back="main-menu">← Înapoi la meniu</button>
-    <section id="jury-section">
-      <h2>Modul 4 · Jurizare</h2>
-      <p class="section-intro">Fiecare dintre cei 3 jurați notează separat echipa, de pe propriul telefon, 5 criterii pe o scară de la 1 la 5. Scorurile se sincronizează live între toate telefoanele conectate — jurații pot nota chiar în același timp. Scorul final e media evaluărilor.</p>
-
-      <!-- ECRAN 0: cod de acces (PIN) — obligatoriu înainte de orice notare -->
-      <div id="jury-pin-view" class="card">
-        <h3>Cod de acces juriu</h3>
-        <p class="section-intro" style="margin-bottom:14px;">Introdu codul primit de la organizator, ca să poți nota echipele.</p>
-        <div class="form-grid">
-          <label class="row-full">Cod de acces<input type="password" id="jury-pin-input" placeholder="Cod"></label>
-        </div>
-        <p id="jury-pin-error" class="hidden" style="color:var(--danger-color); font-weight:600; margin-top:8px;">Cod greșit. Încearcă din nou.</p>
-        <button type="button" id="jury-pin-submit-btn" class="main-action-btn calculate" style="margin-top:14px;">Continuă</button>
-      </div>
-
-      <!-- ECRAN 1: fiecare jurat își alege rolul O SINGURĂ DATĂ, pe telefonul lui -->
-      <div id="jury-identity-view" class="card hidden">
-        <h3>Care jurat ești?</h3>
-        <p class="section-intro" style="margin-bottom:14px;">Alege o singură dată, pe telefonul tău. Vei rămâne acest jurat pentru toată sesiunea (până reîncarci pagina).</p>
-        <div class="action-buttons-group" style="flex-direction:column;">
-          <button type="button" class="main-action-btn calculate jury-identity-btn" data-juror="1">Sunt Jurat 1</button>
-          <button type="button" class="main-action-btn calculate jury-identity-btn" data-juror="2">Sunt Jurat 2</button>
-          <button type="button" class="main-action-btn calculate jury-identity-btn" data-juror="3">Sunt Jurat 3</button>
-        </div>
-      </div>
-
-      <!-- ECRAN A: alegere/creare echipă -->
-      <div id="jury-team-select-view" class="card hidden">
-        <h3 id="jury-team-select-title">Echipa evaluată</h3>
-        <div class="form-grid">
-          <label class="row-full">Numele echipei<input type="text" id="jury-team-name" placeholder="Ex: Echipa Vulturii"></label>
-        </div>
-        <button type="button" id="jury-select-team-btn" class="main-action-btn calculate" style="margin-top:14px;">Continuă cu această echipă</button>
-      </div>
-
-      <!-- ECRAN B: status echipă curentă — un singur buton, blocat pe juratul curent -->
-      <div id="jury-team-status-view" class="hidden">
-        <div class="card">
-          <h3 id="jury-current-team-title">Echipa</h3>
-          <div id="jury-juror-status-list"></div>
-          <div class="action-buttons-group">
-            <button type="button" id="jury-my-score-btn" class="main-action-btn calculate">Completează</button>
-            <button type="button" id="jury-change-team-btn" class="secondary-action-btn">↺ Altă echipă</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ECRAN C: formular de notare pentru juratul curent -->
-      <div id="jury-scoring-view" class="hidden">
-        <div class="card">
-          <h3 id="jury-scoring-title">Jurat</h3>
-          <div id="jury-scoring-criteria"></div>
-          <div class="action-buttons-group">
-            <button type="button" id="jury-submit-score-btn" class="main-action-btn calculate">Trimite Evaluarea</button>
-            <button type="button" id="jury-cancel-score-btn" class="secondary-action-btn">Anulează</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>🏆 Clasament Echipe</h3>
-        <p class="section-intro" style="margin-bottom:10px;">Media se calculează din câți jurați au apucat să noteze (chiar dacă nu sunt toți 3).</p>
-        <div id="jury-leaderboard"></div>
-      </div>
-
-      <div class="card">
-        <h3>Punctaj juriu pe echipe (medie)</h3>
-        <p class="section-intro" style="margin-bottom:10px;">Media notelor primite de la jurați, din cei care au apucat să noteze.</p>
-        <div id="jury-leaderboard-simple"></div>
-      </div>
-    </section>
-  </section>
-
 </div>
 
-<!-- Firebase (folosit doar de Modulul 5 - Juriu, pentru sincronizare live între telefoane) -->
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC_xHS4Rd4uW8r0-25BptrOV5PPAeeKVLk",
-    authDomain: "cefca-juriu.firebaseapp.com",
-    databaseURL: "https://cefca-juriu-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "cefca-juriu",
-    storageBucket: "cefca-juriu.firebasestorage.app",
-    messagingSenderId: "78388676079",
-    appId: "1:78388676079:web:4df53d8852f191b209a21a"
-  };
-  try { firebase.initializeApp(firebaseConfig); } catch (e) { console.error('Firebase init failed', e); }
-</script>
 <script src="script.js"></script>
 </body>
 </html>

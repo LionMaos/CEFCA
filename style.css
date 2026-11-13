@@ -116,45 +116,21 @@ h4 { color: var(--primary-color); margin-top: 20px; margin-bottom: 10px; font-we
 .secondary-action-btn { font-size: 0.95em; color: var(--orange-color); background-color: var(--card-bg); border: 2px solid var(--orange-color); }
 .tertiary-action-btn.back-to-top { display: block; width: 100%; margin: 24px auto 10px; padding: 10px 18px; font-size: 0.9em; font-weight: 600; color: var(--secondary-color); background-color: var(--light-bg); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; min-height: 42px; }
 .main-action-btn.calculate { background: linear-gradient(45deg, var(--success-color), #2fae53); }
-/* Rol de jurat ocupat momentan de alt telefon: rămâne apăsabil (pentru
-   preluare dacă rolul e de fapt abandonat), dar vizual arată ca indisponibil. */
-.jury-identity-btn.jury-role-taken { background: #9aa0a6; opacity: 0.75; }
-
-/* Rândurile din Clasament Echipe / Punctaj juriu — fără aceste reguli,
-   numele echipei și detaliile curg lipite pe același rând (ex. "rosii
-   Jurați: ..." arăta ca și cum "Jurați" ar face parte din numele echipei). */
-.jury-leaderboard-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; }
-.jury-leaderboard-row:last-child { border-bottom: none; }
-.jury-leaderboard-row.rank-1 { font-weight: 700; }
-.jury-rank-badge { flex-shrink: 0; min-width: 22px; color: var(--primary-color); }
-.jury-team-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.jury-team-name { font-weight: 700; }
-.jury-leaderboard-row > .jury-team-name { flex: 1; }
-.jury-team-detail { font-size: 0.85em; color: #666; font-weight: 400; }
-.jury-score { flex-shrink: 0; font-weight: 700; color: var(--primary-color); }
-.jury-empty-msg { color: #666; font-style: italic; }
 .main-action-btn:active { transform: scale(0.98); }
 .secondary-action-btn:active { background-color: var(--orange-color); color: var(--light-text); }
 .tertiary-action-btn.back-to-top:active { background-color: #e2e6ea; color: var(--primary-color); }
 
-/* ============== IERARHIA CHELTUIELILOR (doar săgeți ▲▼ — funcționează perfect cu atingerea) ============== */
+/* ============== IERARHIA CHELTUIELILOR (select unic per cheltuială) ============== */
 .expense-list-drag { list-style: none; padding: 6px; }
 .expense-rank-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 10px; margin-bottom: 8px;
     background: #fafcff; border: 1px solid var(--border-color); border-radius: 10px;
 }
-.expense-rank-item .rank-number {
-    font-weight: 700; color: var(--light-text); background: var(--primary-color); border-radius: 50%;
-    min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.95em; flex-shrink: 0;
-}
 .expense-rank-item .expense-text { flex: 1; font-size: 0.92em; line-height: 1.35; }
-.expense-rank-item .rank-arrows { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
-.rank-arrow-btn {
-    border: 1px solid var(--border-color); background: var(--card-bg); border-radius: 8px; cursor: pointer;
-    width: 40px; height: 34px; font-size: 1em; color: var(--secondary-color); line-height: 1;
+.expense-priority-select {
+    min-width: 84px; min-height: var(--tap); border-radius: 8px; border: 1px solid var(--border-color);
+    background: var(--card-bg); font-family: inherit; font-weight: 700; color: var(--primary-color); text-align: center; padding: 6px;
 }
-.rank-arrow-btn:active:not(:disabled) { background: var(--primary-color); color: var(--light-text); border-color: var(--primary-color); }
-.rank-arrow-btn:disabled { opacity: 0.3; }
 
 .list-legend { display: flex; justify-content: space-between; padding: 0 8px; margin-bottom: 8px; font-weight: 600; color: var(--secondary-color); font-size: 0.72em; text-transform: uppercase; }
 .combined-hierarchy-list { list-style: none; }
@@ -215,6 +191,23 @@ h4 { color: var(--primary-color); margin-top: 20px; margin-bottom: 10px; font-we
 .blitz-alert { margin-top: 12px; padding: 12px 14px; border-radius: 8px; font-size: 0.9em; line-height: 1.5; }
 .blitz-alert.warning { background: #fff8e1; border: 1px solid #ffe08a; color: #7a5b00; }
 .blitz-alert.ok { background: #e6f7e9; border: 1px solid #b7e3bd; color: #1e5e2b; }
+
+/* ============== CONVERTOR VALUTAR ============== */
+.currency-converter { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-color); }
+.currency-converter h4 { margin-top: 0; }
+.converter-hint { font-size: 0.85em; color: var(--secondary-color); margin-bottom: 10px; }
+.converter-row { display: flex; flex-direction: column; gap: 10px; }
+.converter-row input, .converter-row select, .converter-row button { width: 100%; min-height: var(--tap); }
+.converter-row input, .converter-row select { font-family: inherit; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1em; color: var(--dark-text); background: var(--card-bg); }
+.conv-label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 0.85em; color: var(--secondary-color); }
+.conv-label input { font-family: inherit; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1em; color: var(--dark-text); width: 100%; min-height: var(--tap); }
+.converter-result { margin-top: 10px; padding: 12px 14px; background: #e7f1ff; border-radius: 8px; font-weight: 700; color: var(--primary-dark); font-size: 0.95em; }
+
+/* ============== SFATURI PREZENTARE (accordion) ============== */
+.tip-accordion { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; background: #fafcff; }
+.tip-accordion summary { font-weight: 600; cursor: pointer; padding: 6px 0; list-style: revert; }
+.tip-accordion ul { margin-top: 10px; padding-left: 20px; }
+.tip-accordion li { margin-bottom: 6px; font-size: 0.9em; line-height: 1.5; }
 
 /* ===================================================================
    TABLETĂ / DESKTOP — îmbunătățiri progresive peste stilul de telefon
