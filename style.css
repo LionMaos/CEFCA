@@ -232,3 +232,12 @@ h4 { color: var(--primary-color); margin-top: 20px; margin-bottom: 10px; font-we
     .rating-buttons { justify-content: center; }
     .rating-btn { flex: none; min-width: 70px; padding: 10px 24px; }
 }
+
+/* Meniul principal are 3 module: pe ecran lat stau pe un singur rând, pe tabletă al treilea e centrat sub primele două */
+@media (min-width: 640px) {
+    #main-menu .menu-card:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 10px); }
+}
+@media (min-width: 800px) {
+    #main-menu { grid-template-columns: repeat(3, 1fr); }
+    #main-menu .menu-card:last-child:nth-child(odd) { grid-column: auto; justify-self: stretch; width: auto; }
+}
