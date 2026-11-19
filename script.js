@@ -43,20 +43,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const typeMap = { R: 'Realist', I: 'Investigativ', A: 'Artistic', S: 'Social', E: 'Întreprinzător', C: 'Convențional' };
     const hollandInterpretations = {
-      R: "Preferi activități practice, care implică lucrul cu obiecte, mașini, unelte, plante sau animale. Ești o persoană practică, directă, stabilă și preferi soluțiile concrete. Mediile de lucru structurate, în aer liber sau în ateliere ți se potrivesc.",
-      I: "Ești atras de activități care implică observarea, învățarea, investigarea, analiza și rezolvarea problemelor. Ești o persoană curioasă, analitică, independentă și precisă. Preferi mediile academice, de cercetare sau cele care necesită gândire critică.",
-      A: "Îți plac activitățile nestructurate, creative, care îți permit să te exprimi prin forme artistice (scris, muzică, arte vizuale, design). Ești o persoană originală, intuitivă, expresivă și nonconformistă. Preferi mediile flexibile, care încurajează inovația.",
-      S: "Ești orientat către activități care implică interacțiunea cu alte persoane – a ajuta, a învăța, a consilia, a îngriji. Ești o persoană cooperantă, empatică, prietenoasă și responsabilă social. Preferi mediile educaționale, de sănătate sau serviciile sociale.",
-      E: "Preferi activități care îți permit să influențezi, să convingi, să conduci sau să gestionezi alte persoane pentru a atinge obiective organizaționale sau economice. Ești o persoană ambițioasă, energică, sociabilă și persuasivă. Preferi mediile de afaceri, vânzări sau management.",
-      C: "Ești atras de activități care implică manipularea ordonată și sistematică a datelor, organizarea informațiilor, respectarea regulilor și procedurilor. Ești o persoană organizată, conștiincioasă, eficientă și atentă la detalii. Preferi mediile de birou, financiare sau administrative structurate."
+      R: "Îți place să lucrezi cu mâinile și cu lucruri concrete: să repari, să construiești, să folosești unelte și mașini, să lucrezi cu plante sau animale, adesea în aer liber. Ești practic, direct și perseverent și preferi rezultatele concrete discuțiilor abstracte. Ți se potrivesc atelierele, șantierele, fermele, laboratoarele tehnice și munca în aer liber.",
+      I: "Ești atras de activități care presupun să observi, să cercetezi, să analizezi și să înțelegi cum și de ce funcționează lucrurile: probleme de logică, matematică sau știință. Ești curios, analitic, precis și independent și te concentrezi bine, adesea singur. Ți se potrivesc laboratoarele, cercetarea, universitățile și domeniile tehnice sau IT.",
+      A: "Îți plac activitățile libere, creative, în care te poți exprima: scris, muzică, desen, design, actorie, dans, fotografie sau video. Ești original, imaginativ și sensibil la frumos, iar regulile rigide și rutina te obosesc. Ți se potrivesc studiourile, redacțiile, teatrele, agențiile de design și mediile flexibile.",
+      S: "Îți place să lucrezi cu oamenii: să ajuți, să înveți, să consiliezi, să îngrijești. Ești empatic, cooperant, bun ascultător și simți responsabilitate față de ceilalți; preferi să ajuți oamenii decât să lucrezi cu mașini sau cu date. Ți se potrivesc școlile, spitalele, centrele sociale, ONG-urile și organizațiile de tineret.",
+      E: "Îți place să conduci, să convingi, să vinzi și să pornești proiecte sau afaceri, asumându-ți riscuri pentru a atinge un obiectiv. Ești ambițios, energic, sociabil, încrezător și vorbești ușor în fața oamenilor; îți plac competiția și rolul de lider. Ți se potrivesc afacerile, vânzările, marketingul, managementul și politica.",
+      C: "Îți plac ordinea, regulile clare și sarcinile bine definite, mai ales lucrul cu cifre, date și documente. Ești organizat, meticulos, atent la detalii și de încredere și te simți bine când știi exact ce ai de făcut. Ți se potrivesc birourile, băncile, instituțiile publice, contabilitatea, arhivele și bibliotecile."
     };
     const professionRecommendations = {
-      R: ["Inginer mecanic/electrician", "Agricultor/Horticultor", "Instalator/Sudor/Tehnician"],
-      I: ["Cercetător științific", "Programator/Analist IT", "Medic/Biolog/Chimist"],
-      A: ["Designer grafic/web/interior", "Muzician/Compozitor/Actor", "Scriitor/Jurnalist/Arhitect"],
-      S: ["Profesor/Învățător/Trainer", "Asistent medical/social", "Psiholog/Consilier/Terapeut"],
-      E: ["Manager/Antreprenor/Director", "Agent de vânzări/imobiliar/PR", "Avocat/Consultant/Politician"],
-      C: ["Contabil/Expert financiar", "Funcționar public/administrativ", "Bibliotecar/Arhivar/Analist date"]
+      R: ["Electrician", "Mecanic auto", "Instalator / sudor", "Tâmplar / constructor", "Inginer mecanic", "Agricultor / horticultor"],
+      I: ["Cercetător / om de știință", "Programator / analist IT", "Medic", "Biolog / chimist", "Matematician / fizician", "Analist de date"],
+      A: ["Designer grafic / web / interior", "Fotograf / creator video", "Muzician / actor", "Scriitor / jurnalist", "Arhitect", "Ilustrator / grafician"],
+      S: ["Profesor / învățător", "Psiholog / consilier", "Asistent medical", "Asistent social", "Logoped / kinetoterapeut", "Trainer / lucrător de tineret"],
+      E: ["Manager / antreprenor", "Agent de vânzări / imobiliar", "Specialist marketing / PR", "Avocat / procuror", "Agent de turism", "Consultant de afaceri"],
+      C: ["Contabil", "Analist financiar / auditor", "Asistent administrativ", "Funcționar public", "Bibliotecar / arhivar", "Operator date / referent"]
     };
 
     function hideElement(el) { el?.classList.add('hidden'); }
@@ -125,27 +125,72 @@ document.addEventListener('DOMContentLoaded', () => {
       hideElement(hollandValidationErrorsDiv);
 
       const sorted = Object.entries(scores).sort(([, a], [, b]) => b - a);
-      const code = sorted.slice(0, 3).map(([t]) => t).join('');
+      const topScore = sorted[0][1];
+      const code = topScore === 0 ? '—' : sorted.slice(0, 3).map(([t]) => t).join('');
+      const tiedTop = sorted.filter(([, s]) => s === topScore).map(([t]) => t);
+      const joinNames = arr => arr.length > 1
+        ? arr.slice(0, -1).map(t => typeMap[t]).join(', ') + ' și ' + typeMap[arr[arr.length - 1]]
+        : typeMap[arr[0]];
+
+      // egalități de scor care ating primele 3 locuri din cod
+      const tieNotes = [];
+      const seenScores = new Set();
+      sorted.forEach(([, sc]) => {
+        if (seenScores.has(sc)) return;
+        seenScores.add(sc);
+        const grp = sorted.filter(([, x]) => x === sc).map(([t]) => t);
+        const firstIdx = sorted.findIndex(([, x]) => x === sc);
+        if (sc > 0 && grp.length > 1 && firstIdx < 3) tieNotes.push(`${joinNames(grp)} (scor ${sc})`);
+      });
 
       let html = `<h4>Codul tău Holland: <strong>${code}</strong></h4>`;
       html += `<p style="font-size:0.9em;color:var(--secondary-color);margin-bottom:15px;">(Detaliu scoruri: `;
-      html += sorted.slice(0, 3).map(([t, s]) => `${typeMap[t]}=${s}`).join(', ');
-      html += `)</p><br><h4>Interpretare:</h4>`;
+      html += sorted.slice(0, 3).map(([t, sc]) => `${typeMap[t]}=${sc}`).join(', ');
+      html += `)</p>`;
+      if (tieNotes.length) {
+        html += `<p style="font-size:0.9em;color:var(--secondary-color);margin-bottom:15px;">Scoruri egale: ${tieNotes.join('; ')}. Ordinea acestor litere în cod nu are o semnificație.</p>`;
+      }
+      html += `<br><h4>Interpretare:</h4>`;
 
       const primary = sorted[0][0];
-      html += `<p><strong>Tipul dominant (${typeMap[primary]}):</strong> ${hollandInterpretations[primary]}</p>`;
-
-      if (sorted.length > 1 && sorted[1][1] > 0) {
-        const secondary = sorted[1][0];
-        if (hollandInterpretations[secondary] && ((scores[primary] - scores[secondary] <= 1) || (scores[secondary] >= Math.ceil(scores[primary] / 2)))) {
-          html += `<p><strong>Tipul secundar (${typeMap[secondary]}):</strong> ${hollandInterpretations[secondary]}</p>`;
+      if (topScore === 0) {
+        html += `<p>Nu ai ales niciun răspuns ✔️ („Îmi place”), așa că nu se poate stabili un tip. Reia chestionarul și alege ✔️ la activitățile care ți se potrivesc.</p>`;
+      } else if (tiedTop.length >= 4) {
+        html += `<p><strong>Interese foarte variate:</strong> ${tiedTop.length} tipuri au același scor (${joinNames(tiedTop)}). Încearcă să bifezi ✔️ doar activitățile care îți plac cel mai mult sau discută rezultatul cu profesorul.</p>`;
+      } else if (tiedTop.length > 1) {
+        html += `<p><strong>Tipuri cu scor egal (${joinNames(tiedTop)}):</strong> ai interese în ${tiedTop.length === 2 ? 'ambele direcții' : 'mai multe direcții'}, așa că citește descrierile tuturor.</p>`;
+        tiedTop.forEach(t => {
+          html += `<p><strong>${typeMap[t]}:</strong> ${hollandInterpretations[t]}</p>`;
+        });
+      } else {
+        html += `<p><strong>Tipul dominant (${typeMap[primary]}):</strong> ${hollandInterpretations[primary]}</p>`;
+        if (sorted.length > 1 && sorted[1][1] > 0) {
+          const secScore = sorted[1][1];
+          const secTypes = sorted.filter(([, sc]) => sc === secScore).map(([t]) => t);
+          if ((topScore - secScore <= 1) || (secScore >= Math.ceil(topScore / 2))) {
+            if (secTypes.length === 1) {
+              html += `<p><strong>Tipul secundar (${typeMap[secTypes[0]]}):</strong> ${hollandInterpretations[secTypes[0]]}</p>`;
+            } else if (secTypes.length <= 3) {
+              html += `<p><strong>Tipuri secundare cu scor egal (${joinNames(secTypes)}):</strong></p>`;
+              secTypes.forEach(t => {
+                html += `<p><strong>${typeMap[t]}:</strong> ${hollandInterpretations[t]}</p>`;
+              });
+            } else {
+              html += `<p><strong>Tipuri secundare cu scor egal:</strong> ${joinNames(secTypes)}.</p>`;
+            }
+          }
         }
       }
 
-      html += `<br><h4>Recomandări Profesii (bazate pe tipul dominant):</h4>`;
-      const recs = professionRecommendations[primary] || [];
-      if (recs.length) {
-        html += `<ul>` + recs.slice(0, 3).map(p => `<li>${p}</li>`).join('') + `</ul>`;
+      if (topScore > 0 && tiedTop.length < 4) {
+        const profTypes = tiedTop.length > 1 ? tiedTop : [primary];
+        html += `<br><h4>Exemple de meserii potrivite${tiedTop.length > 1 ? '' : ' (tipul dominant)'}:</h4>`;
+        profTypes.forEach(t => {
+          const recs = professionRecommendations[t] || [];
+          if (!recs.length) return;
+          if (profTypes.length > 1) html += `<p><strong>${typeMap[t]}</strong></p>`;
+          html += `<ul>` + recs.map(p => `<li>${p}</li>`).join('') + `</ul>`;
+        });
       }
 
       html += `<br><details><summary>Vezi scorurile complete</summary><p>`;
@@ -332,36 +377,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!root) return;
 
     const questions = [
-      { category: 'Phishing prin mesaj (prieten fals)', question: 'Un „prieten" îți scrie pe WhatsApp că are o urgență medicală și are nevoie de bani chiar acum. Ce faci?',
-        options: ['Trimit banii imediat, e vorba de o urgență', 'Îl sun pe numărul lui obișnuit, ca să fiu sigur că el a scris, nu altcineva', 'Îi cer mai multe detalii tot pe WhatsApp', 'Trimit doar jumătate din sumă, ca să fiu precaut'],
-        correctAnswer: 1, explanation: 'Fraudatorii clonează conturi de WhatsApp sau preiau controlul asupra lor. Singura modalitate sigură de verificare este să contactezi persoana pe alt canal (telefon, față în față). Nu trimite niciodată bani fără confirmare directă.' },
-      { category: 'Cod QR fraudulos (quishing)', question: 'Vrei să plătești parcarea scanând un cod QR lipit pe un stâlp. Ce ar trebui să te pui pe gânduri?',
-        options: ['Codul ar putea fi un abțibild fals, lipit peste cel oficial, care te duce pe un site ce îți fură datele cardului', 'Codurile QR sunt mereu sigure, sunt generate automat', 'E o problemă doar dacă telefonul n-are antivirus', 'Nu există niciun risc la coduri QR'],
-        correctAnswer: 0, explanation: 'Tehnica „quishing" (QR + phishing) presupune lipirea unui cod QR fals peste cel legitim. Când îl scanezi, ești redirecționat către un site care îți fură datele de card. Verifică mereu dacă codul QR nu este un autocolant lipit peste cel original.' },
-      { category: 'Deepfake / apel video fals', question: 'Primești un apel video în care cineva care arată și vorbește exact ca directorul băncii tale îți cere să confirmi o plată. Ce faci?',
-        options: ['Confirm, doar l-am văzut cu ochii mei', 'Închid și sun eu banca la numărul oficial, pentru că imaginea și vocea pot fi falsificate', 'Îi cer să-mi trimită un email de confirmare', 'Verific doar dacă numărul de telefon pare să fie al băncii'],
-        correctAnswer: 1, explanation: 'Tehnologia deepfake bazată pe inteligență artificială poate genera video și audio extrem de realiste. Fraudatorii pot imita perfect chipul și vocea oricui. Nu lua decizii financiare bazate pe apeluri video nesolicitate — sună mereu banca la numărul oficial.' },
-      { category: 'Magazin online fals', question: 'Găsești un magazin online care vinde un iPhone la doar 200 de lei. Ce te-ar face să bănuiești o țeapă?',
-        options: ['Are multe recenzii pozitive', 'Acceptă plata doar prin transfer bancar sau criptomonede, nu și cu cardul sau ramburs', 'Are un design de site foarte profesionist', 'Oferă livrare gratuită'],
-        correctAnswer: 1, explanation: 'Magazinele frauduloase oferă prețuri nerealiste și acceptă doar metode de plată ireversibile (transfer bancar, cripto). Un site legitim oferă multiple opțiuni de plată (card, ramburs). Recenziile pot fi false, iar designul poate fi copiat de pe site-uri reale.' },
-      { category: 'Money mule', question: 'Cineva cunoscut online îți propune o „afacere": banii lui trec prin contul tău, iar tu păstrezi o parte drept comision. Ce faci?',
-        options: ['Accept, pare un mod ușor de a face bani', 'Refuz — banii care trec fără motiv real prin contul meu ar putea fi din fraude, iar eu aș răspunde pentru asta', 'Accept, dar doar dacă suma e mică', 'Cer un contract semnat înainte'],
-        correctAnswer: 1, explanation: 'Aceasta este o schemă de tip „money mule" (catâr financiar). Banii proveniți din fraude sunt „spălați" prin contul tău. Ești considerat complice la spălare de bani și riști pedeapsa cu închisoarea, chiar dacă nu știai proveniența banilor.' },
-      { category: 'Wi-Fi public / Man-in-the-Middle', question: 'Ești într-o cafenea și vrei să-ți verifici contul bancar folosind Wi-Fi-ul gratuit al localului. E o idee bună?',
-        options: ['Da, atât timp cât site-ul băncii are lacătul verde în bara de adresă', 'Nu, pe o rețea publică altcineva ar putea „asculta" ce trimit și fura datele mele', 'Da, un Wi-Fi public e la fel de sigur ca cel de acasă', 'Nu contează, telefonul are oricum parolă'],
-        correctAnswer: 1, explanation: 'Pe rețele Wi-Fi publice, atacatorii pot crea puncte de acces false sau intercepta traficul prin atacuri „Man-in-the-Middle". Evită accesarea aplicațiilor bancare pe Wi-Fi public. Folosește datele mobile sau un VPN pentru tranzacții financiare.' },
-      { category: 'Phishing ANAF', question: 'Primești un email care pare de la ANAF, spunând că ai o datorie și trebuie să plătești urgent, altfel îți blochează contul. Ce faci?',
-        options: ['Plătesc imediat, ca să evit problemele', 'Dau click pe link să văd despre ce e vorba', 'Verific direct pe site-ul oficial anaf.ro sau sun la ANAF, fără să folosesc linkul din email', 'Răspund la email cerând mai multe detalii'],
-        correctAnswer: 2, explanation: 'ANAF, băncile și alte instituții nu trimit niciodată solicitări de plată prin email cu amenințări de executare imediată. Verifică mereu pe site-ul oficial sau la telefonul instituției. Presiunea și urgența sunt semne clare de fraudă.' },
-      { category: 'Tranzacție test (card furat)', question: 'Vezi pe extrasul de cont o plată de 2-3 lei pe care nu ți-o amintești. E o sumă prea mică ca să conteze?',
-        options: ['Da, e neglijabilă', 'Nu neapărat — hoții testează adesea un card furat cu sume mici, înainte să facă plăți mari', 'E normal, băncile mai pun taxe mici din când în când', 'Nu, doar dacă suma trece de 50 de lei'],
-        correctAnswer: 1, explanation: 'Fraudatorii testează adesea cardurile furate cu tranzacții foarte mici (1-5 lei) pentru a verifica dacă funcționează. Dacă trec, urmează tranzacții mari. Raportează imediat orice tranzacție nerecunoscută, oricât de mică!' },
-      { category: 'Parole și 2FA', question: 'Care e cea mai bună metodă de a-ți proteja contul de internet banking?',
-        options: ['O parolă cu numele tău și anul nașterii', 'Aceeași parolă pe care o folosești și pe alte site-uri', 'O parolă lungă, greu de ghicit, plus un cod de confirmare primit pe telefon la fiecare autentificare', 'O parolă scurtă, dar schimbată des'],
-        correctAnswer: 2, explanation: 'O parolă sigură este lungă, conține litere mari și mici, cifre și caractere speciale, și nu conține informații personale. Cea mai bună protecție combină o parolă puternică cu autentificarea în doi pași (2FA).' },
-      { category: 'Schemă piramidală (Ponzi)', question: 'Un cunoscut îți spune că a găsit o platformă de investiții care oferă 30% profit garantat pe lună și te încurajează să aduci și alți prieteni, pentru un bonus. Ce ar trebui să te alerteze?',
-        options: ['E o oportunitate bună dacă platforma are un site frumos și mulți utilizatori', 'Un randament „garantat" de 30%/lună e nerealist, iar structura bazată pe aducerea de noi investitori e specifică unei scheme piramidale (Ponzi)', 'Ar trebui să investesc doar o sumă mică, ca test', 'Dacă prietenul meu a câștigat deja bani, sigur e sigur și pentru mine'],
-        correctAnswer: 1, explanation: 'Randamentele „garantate" mult peste piață, combinate cu recompense pentru aducerea de noi investitori, sunt semnătura clasică a schemelor piramidale (Ponzi). Banii noilor investitori plătesc „profitul" celor vechi, până când schema se prăbușește și majoritatea pierd tot.' },
+      { category: "Mesaj de la „un prieten” (WhatsApp)", question: "Primești pe WhatsApp un mesaj de pe un număr necunoscut: „Salut, sunt Andrei! Mi-am pierdut telefonul, ăsta e numărul meu nou. Mă ajuți urgent cu 300 de lei? Ți-i dau mâine.” Ce faci?",
+        options: ["Îi trimit banii, e prietenul meu și e urgent", "Îi cer mai multe detalii, tot pe WhatsApp", "Îl sun pe numărul vechi, pe care îl am salvat, să aflu dacă el a scris", "Îi trimit doar jumătate din sumă, ca să nu risc prea mult"],
+        correctAnswer: 2, explanation: "Fraudatorii se dau drept prieteni sau rude, cu „număr nou” sau cu un cont de WhatsApp furat, și cer bani urgent. Singura verificare sigură e pe alt canal: îl suni pe numărul vechi, pe care îl știi deja. Regula: niciun leu fără confirmare directă, chiar dacă mesajul pare scris de cineva cunoscut." },
+      { category: "Cod QR fals (quishing)", question: "Vrei să plătești parcarea din oraș și scanezi un cod QR lipit pe un stâlp. Ce risc există?",
+        options: ["Autocolantul poate fi pus de infractori peste cel real și te duce pe un site fals, care îți fură datele cardului", "Niciunul, un cod QR e mereu sigur", "Doar dacă telefonul nu are antivirus", "Niciunul, dacă pagina se deschide repede"],
+        correctAnswer: 0, explanation: "Atacatorii lipesc propriile coduri QR peste cele oficiale (pe parcări, în restaurante, pe afișe). Codul te duce pe un site care arată ca cel real și îți cere datele cardului. Regula: înainte să scanezi, verifică să nu fie un autocolant pus peste altul, iar după scanare citește adresa site-ului. Dacă ai dubii, plătește din aplicația oficială." },
+      { category: "Deepfake (apel video fals făcut cu AI)", question: "Primești un apel video pe WhatsApp: se vede și se aude „directorul băncii tale”, care îți cere să confirmi urgent o plată din cont. Arată și vorbește exact ca el. Ce faci?",
+        options: ["Confirm plata, l-am văzut și l-am auzit chiar eu", "Îi cer să-mi trimită un mesaj scris în timpul apelului", "Verific dacă numărul de pe care sună seamănă cu al băncii", "Închid și sun eu banca, la numărul oficial de pe card sau din aplicație"],
+        correctAnswer: 3, explanation: "Cu ajutorul inteligenței artificiale, oricine poate copia fața și vocea unei persoane, după câteva secunde de video sau audio din rețelele sociale. Un apel video nu mai dovedește că persoana e reală, iar numărul de telefon poate fi falsificat. Regula: nu confirma nimic în timpul unui apel primit; închide și sună tu banca la numărul oficial." },
+      { category: "Magazin online fals", question: "Vezi pe Instagram o reclamă la un magazin online care vinde ultimul model de iPhone cu 400 de lei. Ce semn ar trebui să te facă să bănuiești o înșelătorie?",
+        options: ["Are multe like-uri și comentarii pozitive", "Acceptă plata doar prin transfer bancar sau criptomonede, nu și cu cardul sau ramburs", "Are un site cu aspect foarte profesionist", "Oferă livrare gratuită"],
+        correctAnswer: 1, explanation: "Un preț mult sub piață și plata doar prin transfer sau criptomonede (bani care nu se mai pot recupera) sunt semnalul clasic al unei înșelătorii. Comentariile pot fi cumpărate, iar site-ul poate fi copiat în câteva ore. Regula: dacă oferta pare prea bună ca să fie adevărată, probabil nu e; plătește cu cardul sau ramburs și caută păreri independente despre magazin." },
+      { category: "Money mule („catâr financiar”)", question: "Cineva îți scrie pe Instagram: „Job ușor de acasă! Primești bani în contul tău, îi trimiți mai departe unei persoane și păstrezi 10% comision.” Ce faci?",
+        options: ["Accept, sunt bani ușori pentru foarte puțină muncă", "Accept, dar doar dacă sumele sunt mici", "Refuz: banii pot veni din fraude, iar eu aș putea răspunde în fața poliției", "Cer un contract înainte să accept"],
+        correctAnswer: 2, explanation: "Se numește „money mule” (catâr financiar): banii furați de la alții trec prin contul tău, ca să nu se vadă de unde vin. Chiar dacă nu ai știut, poți fi tras la răspundere pentru spălare de bani și riști închisoarea. Regula: nu lăsa pe nimeni să folosească contul tău pentru bani care nu sunt ai tăi." },
+      { category: "Wi-Fi public (atacul „Man-in-the-Middle”)", question: "Ești în mall, vezi rețeaua „Mall_WiFi_Gratuit”, fără parolă, și vrei să îți verifici contul de la bancă. Ce e cel mai sigur?",
+        options: ["Mă conectez, atât timp cât site-ul băncii are lăcățel în bara de adresă", "Mă conectez, un Wi-Fi public e la fel de sigur ca cel de acasă", "Mă conectez, dar deschid pagina în modul incognito", "Nu mă conectez; folosesc datele mobile (sau un VPN) pentru tranzacții"],
+        correctAnswer: 3, explanation: "Oricine poate crea o rețea Wi-Fi falsă, cu un nume convingător, și poate vedea ce trimiți prin ea (atac numit „Man-in-the-Middle”). Lăcățelul și modul incognito nu te protejează de asta. Regula: aplicațiile bancare și plățile se fac pe datele mobile sau cu VPN, nu pe Wi-Fi public." },
+      { category: "SMS fals de la curier (phishing)", question: "Aștepți un colet. Primești un SMS: „Coletul tău nu a putut fi livrat. Plătește 4,99 lei taxă de redirecționare aici: (link)”. Ce faci?",
+        options: ["Nu apăs pe link; verific coletul în aplicația sau pe site-ul oficial al curierului, cu numărul comenzii", "Plătesc, e doar 4,99 lei", "Apăs pe link doar să văd despre ce e vorba, fără să introduc nimic", "Răspund la SMS și cer mai multe detalii"],
+        correctAnswer: 0, explanation: "Acesta e phishing: mesajul imită curierii, ANAF, băncile sau Poșta, iar linkul duce pe o pagină falsă unde ți se cer datele cardului. Suma mică te face să nu te gândești prea mult. Regula: instituțiile nu cer plăți urgente printr-un link din SMS; nu apăsa pe link și verifică direct pe site-ul sau în aplicația oficială." },
+      { category: "Plată mică necunoscută (card furat)", question: "În aplicația băncii vezi o plată de 3 lei la un comerciant pe care nu îl știi. Nu-ți amintești să fi cumpărat ceva. Ce faci?",
+        options: ["Las așa, 3 lei nu înseamnă nimic", "Anunț banca imediat și blochez cardul, pentru că hoții testează cardurile furate cu sume mici", "Probabil e un comision al băncii, nu fac nimic", "Aștept să văd dacă mai apar și alte plăți"],
+        correctAnswer: 1, explanation: "Infractorii testează cardul furat cu o sumă foarte mică (1-5 lei). Dacă plata trece, urmează sume mari. Regula: orice plată pe care nu o recunoști, oricât de mică, se raportează imediat băncii, iar cardul se blochează din aplicație." },
+      { category: "Parole și verificare în doi pași (2FA)", question: "Care e cea mai bună protecție pentru contul tău de la bancă sau de pe Instagram?",
+        options: ["O parolă cu numele și anul nașterii, ușor de ținut minte", "Aceeași parolă ca la toate conturile, ca să nu o uit", "O parolă lungă, numai a ta, plus verificare în doi pași (cod primit pe telefon)", "O parolă scurtă, dar pe care o schimb des"],
+        correctAnswer: 2, explanation: "Parolele cu date personale se ghicesc ușor, iar dacă o parolă folosită peste tot ajunge la atacatori, aceștia încearcă toate conturile tale. O frază lungă, de exemplu „CaineleMeuAre3PeteNegre!”, plus codul de confirmare de pe telefon (2FA) este cea mai bună protecție. Regula: o parolă diferită pentru fiecare cont și 2FA oriunde se poate." },
+      { category: "Schemă piramidală (Ponzi)", question: "Un coleg îți spune că a intrat într-un grup de Telegram cu o platformă de investiții: „profit garantat 30% pe lună” și bonus dacă aduci și alți prieteni. El a primit deja bani. Ce ar trebui să te alerteze?",
+        options: ["Nimic, dacă platforma arată bine și are mulți membri", "Nimic, dacă investesc doar o sumă mică, ca test", "Nimic, dacă și colegul meu a câștigat deja bani", "Profitul „garantat” de 30% pe lună și bonusul pentru aducerea de prieteni: sunt semnele unei scheme piramidale"],
+        correctAnswer: 3, explanation: "Nicio investiție reală nu garantează 30% pe lună. La schemele piramidale (Ponzi), banii noilor veniți plătesc „profitul” celor vechi, până când schema se prăbușește și majoritatea pierd tot. Primii câștigă ca să te convingă și pe tine. Regula: „profit garantat” și bonus pentru aducerea de prieteni înseamnă pericol." },
     ];
 
     let currentIndex = 0, selectedOption = null, answered = false, score = 0;
