@@ -72,7 +72,7 @@ var QS = new URLSearchParams(location.search), QR_ROLE = (['1','2','3'].indexOf(
 var SID = (QS.get('s')||'').replace(/[^A-Za-z0-9_-]/g,'');
 try{ if(SID) localStorage.setItem('cefca_sid',SID); else SID = localStorage.getItem('cefca_sid')||''; }catch(e){}
 var BASE = 'https://script.google.com/macros/s/'+SID+'/exec';
-var role = null, team = '', vals = [], confirmRel = false;
+var role = null, team = '', vals = [], confirmRel = false, booting = !!QR_ROLE;
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function show(id){['v-role','v-team','v-score'].forEach(function(v){$(v).classList.toggle('hidden',v!==id)})}
@@ -92,6 +92,7 @@ function call(fn){var a=arguments,q;
   return fetch(BASE+'?'+q+'&t='+encodeURIComponent(a[1])).then(function(r){return r.json()})}
 function render(s){
   var prev = role; role = s.role;
+  if(!role&&booting){$('who').textContent='Se conectează…';show('none');return}
   if(!role){
     if(prev){note('Rolul tău a fost preluat de alt telefon. Alege din nou.','err')}
     $('who').textContent='Alege rolul tău';
@@ -111,7 +112,7 @@ function render(s){
   Array.prototype.forEach.call(document.querySelectorAll('#mine button'),function(b){b.onclick=function(){var x=m[+b.getAttribute('data-i')];openScore(x.team,x.crit)}});
   if($('v-score').classList.contains('hidden')) show('v-team');
 }
-function refresh(){return call('jState',TOK).then(function(s){render(s);return s}).catch(function(){$('who').textContent='Conexiune pierdută — verifică internetul telefonului'})}
+function refresh(){return call('jState',TOK).then(function(s){render(s);return s}).catch(function(){booting=false;$('who').textContent='Conexiune pierdută — verifică internetul telefonului'})}
 function claim(n){return call('jClaim',TOK,n).then(function(j){
   if(!j.ok){note(j.error||'Nu s-a putut prelua rolul.','err')}
   return refresh()}).catch(function(){note('Nu s-a putut contacta serverul. Încearcă din nou.','err')})}
@@ -156,9 +157,11 @@ $('btn-send').onclick=function(){
 function isFreshScan(){try{var n=performance.getEntriesByType('navigation')[0];return !n||n.type!=='reload'}catch(e){return true}}
 /* scanare nouă a unui cartonaș: telefonul devine juratul scanat (chiar dacă avea alt rol sau l-a eliberat manual);
    la simpla reîncărcare a paginii se păstrează rolul curent */
+function endBoot(){booting=false;refresh()}
 function autoClaim(s){
-  if(!QR_ROLE||!s)return;
-  if(isFreshScan()){if(s.role!==QR_ROLE){lsSet('cefca_noauto',null);return claim(QR_ROLE)}return}
-  if(!s.role&&!lsGet('cefca_noauto'))return claim(QR_ROLE)}
-if(!SID){$('who').textContent='Scanează cartonașul tău de jurat (codul QR).'}else{refresh().then(autoClaim);setInterval(refresh,7000)}
+  if(!QR_ROLE||!s){endBoot();return}
+  if(isFreshScan()){if(s.role!==QR_ROLE){lsSet('cefca_noauto',null);return claim(QR_ROLE).then(endBoot,endBoot)}return endBoot()}
+  if(!s.role&&!lsGet('cefca_noauto'))return claim(QR_ROLE).then(endBoot,endBoot);
+  endBoot()}
+if(!SID){$('who').textContent='Scanează cartonașul tău de jurat (codul QR).'}else{refresh().then(autoClaim,function(){endBoot()});setInterval(refresh,7000)}
 </script></body></html>
