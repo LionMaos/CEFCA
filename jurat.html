@@ -153,6 +153,12 @@ $('btn-send').onclick=function(){
   }).catch(function(){note('Nu s-a putut trimite — verifică internetul telefonului și încearcă din nou.','err')})
   .then(function(){sending=false;$('btn-send').textContent='Trimite evaluarea'});
 };
-function autoClaim(s){if(QR_ROLE&&s&&!s.role&&!lsGet('cefca_noauto'))return claim(QR_ROLE)}
+function isFreshScan(){try{var n=performance.getEntriesByType('navigation')[0];return !n||n.type!=='reload'}catch(e){return true}}
+/* scanare nouă a unui cartonaș: telefonul devine juratul scanat (chiar dacă avea alt rol sau l-a eliberat manual);
+   la simpla reîncărcare a paginii se păstrează rolul curent */
+function autoClaim(s){
+  if(!QR_ROLE||!s)return;
+  if(isFreshScan()){if(s.role!==QR_ROLE){lsSet('cefca_noauto',null);return claim(QR_ROLE)}return}
+  if(!s.role&&!lsGet('cefca_noauto'))return claim(QR_ROLE)}
 if(!SID){$('who').textContent='Scanează cartonașul tău de jurat (codul QR).'}else{refresh().then(autoClaim);setInterval(refresh,7000)}
 </script></body></html>
