@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ro"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEFCA · Jurizare</title>
+<style>
+:root{--p:#007bff;--g:#28a745;--r:#dc3545;--o:#fd7e14;--s:#6c757d;--bg:#f4f7f6;--t:#343a40;--b:#dee2e6}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--t);font-size:16px;line-height:1.5;padding:16px 14px 40px;max-width:640px;margin:0 auto}
+h1{font-size:1.3em;color:var(--p);text-align:center;margin:6px 0 2px}
+.sub{text-align:center;color:var(--s);font-size:.9em;margin-bottom:16px}
+.card{background:#fff;border:1px solid #e9ecef;border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+h2{font-size:1.1em;color:var(--p);margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--p)}
+.hidden{display:none!important}
+button{font-family:inherit;font-size:1em;border:none;border-radius:50px;cursor:pointer;min-height:46px;width:100%;font-weight:600;margin-top:10px;padding:10px 16px}
+.go{background:linear-gradient(45deg,var(--g),#2fae53);color:#fff}
+.alt{background:#fff;color:var(--o);border:2px solid var(--o)}
+.role.taken{background:#9aa0a6;color:#fff}
+input[type=text]{width:100%;padding:12px;border:1px solid var(--b);border-radius:8px;font-size:1em}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eee}
+.row:last-child{border-bottom:none}
+.crit{padding:8px 0}
+.crit{padding:12px 0;border-bottom:1px solid #eee}.crit:last-child{border-bottom:none}
+.crit label{display:block;font-weight:700;font-size:1em;margin-bottom:8px}
+.crit .num{display:inline-block;background:var(--p);color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:.85em;margin-right:8px}
+.opts{display:flex;gap:6px}
+button.opt{flex:1;width:auto;margin:0;min-height:52px;padding:0;border-radius:10px;border:2px solid var(--b);background:#fff;color:var(--t);font-size:1.2em;font-weight:700}
+button.opt.sel{background:var(--p);border-color:var(--p);color:#fff}
+.legend{display:flex;justify-content:space-between;font-size:.78em;color:var(--s);margin-top:4px}
+.prog{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:4px;font-weight:700;border-bottom:2px solid var(--p);z-index:2}
+select{width:100%;padding:12px;border:1px solid var(--b);border-radius:8px;font-size:1em;background:#fff}
+.score{font-weight:700;color:var(--p);white-space:nowrap}
+.msg{padding:10px 12px;border-radius:8px;margin-bottom:12px;font-size:.92em}
+.err{background:#f8d7da;color:#721c24}.ok{background:#e6f7e9;color:#1e5e2b}
+.mini{font-size:.82em;color:var(--s)}
+.small{width:auto;min-height:36px;padding:6px 14px;margin:0;font-size:.85em}
+</style></head><body>
+<h1>CEFCA · Jurizare</h1>
+<p class="sub" id="who">Se conectează…</p>
+<div id="msg" class="msg hidden"></div>
+
+<div id="v-role" class="card hidden">
+  <h2>Care jurat ești?</h2>
+  <p class="mini" style="margin-bottom:6px">Alege o singură dată, pe telefonul tău. Nimeni altcineva nu poate prelua rolul cât timp ești conectat.</p>
+  <div id="roles"></div>
+</div>
+
+<div id="v-team" class="hidden">
+  <div class="card">
+    <h2>Echipa evaluată</h2>
+    <input type="text" id="team" maxlength="60" placeholder="Ex: Echipa Vulturii" autocomplete="off">
+    <button class="go" id="btn-team">Continuă cu această echipă</button>
+  </div>
+  <div class="card">
+    <button class="alt small" id="btn-switch">Schimbă rolul (alt jurat)</button>
+  </div>
+  <div class="card">
+    <h2>Notele mele</h2>
+    <div id="mine"><p class="mini">Încă nu ai notat nicio echipă.</p></div>
+  </div>
+</div>
+
+<div id="v-score" class="card hidden">
+  <h2 id="score-title">Evaluare</h2>
+  <div id="crit"></div>
+  <button class="go" id="btn-send">Trimite evaluarea</button>
+  <button class="alt" id="btn-cancel">Anulează</button>
+</div>
+
+<script>
+var CRITERIA = [["prezentare", "Calitatea prezentării"], ["eficienta", "Eficiența afacerii"], ["realism", "Nivelul de realism al implementării"], ["originalitate", "Originalitatea ideii"], ["echipa", "Lucrul în echipă & răspunsuri la întrebări"]], MAXT = 25, SMAX = 5;
+var QS = new URLSearchParams(location.search), QR_ROLE = (['1','2','3'].indexOf(QS.get('r'))>=0 ? QS.get('r') : '');
+var SID = (QS.get('s')||'').replace(/[^A-Za-z0-9_-]/g,'');
+try{ if(SID) localStorage.setItem('cefca_sid',SID); else SID = localStorage.getItem('cefca_sid')||''; }catch(e){}
+var BASE = 'https://script.google.com/macros/s/'+SID+'/exec';
+var role = null, team = '', vals = [], confirmRel = false;
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function show(id){['v-role','v-team','v-score'].forEach(function(v){$(v).classList.toggle('hidden',v!==id)})}
+function note(t,cls){var m=$('msg');m.textContent=t;m.className='msg '+cls;clearTimeout(note._t);note._t=setTimeout(function(){m.className='msg hidden'},6000)}
+/* identificator al telefonului (nu adresa IP: jurații ies toți prin rețele mobile) */
+var TOK=null;
+try{TOK=localStorage.getItem('cefca_tok')}catch(e){}
+if(!TOK||TOK.length<8){TOK='';for(var q=0;q<24;q++)TOK+='abcdefghijkmnpqrstuvwxyz23456789'.charAt(Math.floor(Math.random()*32));try{localStorage.setItem('cefca_tok',TOK)}catch(e){}}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}}
+function call(fn){var a=arguments,q;
+  if(!SID)return Promise.reject(new Error('fara adresa'));
+  if(fn==='jState')q='api=state';
+  else if(fn==='jClaim')q='api=claim&r='+encodeURIComponent(a[2]);
+  else if(fn==='jRelease')q='api=release';
+  else q='api=score&team='+encodeURIComponent(a[2])+'&c='+a[3].join(',');
+  return fetch(BASE+'?'+q+'&t='+encodeURIComponent(a[1])).then(function(r){return r.json()})}
+function render(s){
+  var prev = role; role = s.role;
+  if(!role){
+    if(prev){note('Rolul tău a fost preluat de alt telefon. Alege din nou.','err')}
+    $('who').textContent='Alege rolul tău';
+    var h='';['1','2','3'].forEach(function(n){
+      var st=s.roles[n], t=st==='taken';
+      h+='<button class="go role'+(t?' taken':'')+'" data-r="'+n+'">'+(t?'Jurat '+n+' — ocupat momentan':'Sunt Jurat '+n)+'</button>';
+    });
+    $('roles').innerHTML=h;
+    Array.prototype.forEach.call(document.querySelectorAll('.role'),function(b){b.onclick=function(){lsSet('cefca_noauto',null);claim(b.getAttribute('data-r'))}});
+    show('v-role'); return;
+  }
+  $('who').textContent='Tu ești Jurat '+role;
+  var m=s.scores, h2='';
+  if(!m.length){h2='<p class="mini">Încă nu ai notat nicio echipă.</p>'}
+  m.forEach(function(x,i){h2+='<div class="row"><span><strong>'+esc(x.team)+'</strong></span><span class="score">'+x.total+'/'+MAXT+(x.crit?' <span class="mini">('+x.crit.join('·')+')</span>':'')+'</span><button class="alt small" data-i="'+i+'">Refă</button></div>'});
+  $('mine').innerHTML=h2;
+  Array.prototype.forEach.call(document.querySelectorAll('#mine button'),function(b){b.onclick=function(){var x=m[+b.getAttribute('data-i')];openScore(x.team,x.crit)}});
+  if($('v-score').classList.contains('hidden')) show('v-team');
+}
+function refresh(){return call('jState',TOK).then(function(s){render(s);return s}).catch(function(){$('who').textContent='Conexiune pierdută — verifică internetul telefonului'})}
+function claim(n){return call('jClaim',TOK,n).then(function(j){
+  if(!j.ok){note(j.error||'Nu s-a putut prelua rolul.','err')}
+  return refresh()}).catch(function(){note('Nu s-a putut contacta serverul. Încearcă din nou.','err')})}
+$('btn-team').onclick=function(){var t=$('team').value.trim();if(!t){note('Te rog completează numele echipei.','err');return}openScore(t)};
+function openScore(t,prev){
+  team=t;$('score-title').textContent='Jurat '+role+' — evaluează echipa „'+t+'”';
+  vals=[];CRITERIA.forEach(function(c,i){vals[i]=(prev&&prev.length===CRITERIA.length)?prev[i]:0});
+  var h='<div class="prog" id="prog"></div>';CRITERIA.forEach(function(c,i){
+    h+='<div class="crit"><label><span class="num">'+(i+1)+'</span>'+esc(c[1])+'</label><div class="opts" data-i="'+i+'">';
+    for(var k=1;k<=SMAX;k++)h+='<button type="button" class="opt" data-i="'+i+'" data-v="'+k+'">'+k+'</button>';
+    h+='</div><div class="legend"><span>1 = slab</span><span>'+SMAX+' = excelent</span></div></div>'});
+  $('crit').innerHTML=h;
+  Array.prototype.forEach.call(document.querySelectorAll('#crit .opt'),function(b){b.onclick=function(){vals[+b.getAttribute('data-i')]=+b.getAttribute('data-v');paint()}});
+  paint();show('v-score');window.scrollTo(0,0);
+}
+function paint(){
+  Array.prototype.forEach.call(document.querySelectorAll('#crit .opt'),function(b){
+    b.classList.toggle('sel',vals[+b.getAttribute('data-i')]===+b.getAttribute('data-v'))});
+  var done=vals.filter(function(v){return v>0}).length,tot=vals.reduce(function(a,b){return a+b},0);
+  $('prog').textContent='Completate '+done+'/'+CRITERIA.length+' · Total '+tot+'/'+MAXT}
+/* fără ferestre confirm(): se apasă de două ori */
+$('btn-switch').onclick=function(){
+  var b=$('btn-switch');
+  if(!confirmRel){confirmRel=true;b.textContent='Apasă încă o dată pentru a elibera Jurat '+role;setTimeout(function(){confirmRel=false;b.textContent='Schimbă rolul (alt jurat)'},5000);return}
+  confirmRel=false;b.textContent='Schimbă rolul (alt jurat)';
+  lsSet('cefca_noauto','1');
+  call('jRelease',TOK).then(function(){return refresh()}).catch(function(){note('Nu s-a putut contacta serverul.','err')});
+};
+$('btn-cancel').onclick=function(){show('v-team')};
+var sending=false;
+$('btn-send').onclick=function(){
+  if(sending)return;
+  var bad=vals.length!==CRITERIA.length||vals.some(function(v){return !(v>=1)});
+  if(bad){note('Te rog completează toate cele 5 criterii înainte de a trimite.','err');return}
+  sending=true;$('btn-send').textContent='Se trimite…';
+  call('jScore',TOK,team,vals).then(function(j){
+    if(j.ok){$('team').value='';show('v-team');render(j.state);note('Evaluarea a fost trimisă.','ok')}
+    else{note(j.error||'Nu s-a putut trimite evaluarea.','err')}
+  }).catch(function(){note('Nu s-a putut trimite — verifică internetul telefonului și încearcă din nou.','err')})
+  .then(function(){sending=false;$('btn-send').textContent='Trimite evaluarea'});
+};
+function autoClaim(s){if(QR_ROLE&&s&&!s.role&&!lsGet('cefca_noauto'))return claim(QR_ROLE)}
+if(!SID){$('who').textContent='Scanează cartonașul tău de jurat (codul QR).'}else{refresh().then(autoClaim);setInterval(refresh,7000)}
+</script></body></html>
