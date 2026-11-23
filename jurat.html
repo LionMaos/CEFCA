@@ -29,7 +29,7 @@ button.opt.sel{background:var(--p);border-color:var(--p);color:#fff}
 .prog{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:4px;font-weight:700;border-bottom:2px solid var(--p);z-index:2}
 select{width:100%;padding:12px;border:1px solid var(--b);border-radius:8px;font-size:1em;background:#fff}
 .score{font-weight:700;color:var(--p);white-space:nowrap}
-.msg{padding:10px 12px;border-radius:8px;margin-bottom:12px;font-size:.92em}
+.msg{padding:12px 14px;border-radius:8px;margin-bottom:12px;font-size:1em;font-weight:600;position:sticky;top:6px;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .err{background:#f8d7da;color:#721c24}.ok{background:#e6f7e9;color:#1e5e2b}
 .mini{font-size:.82em;color:var(--s)}
 .small{width:auto;min-height:36px;padding:6px 14px;margin:0;font-size:.85em}
@@ -72,7 +72,7 @@ var QS = new URLSearchParams(location.search), QR_ROLE = (['1','2','3'].indexOf(
 var SID = (QS.get('s')||'').replace(/[^A-Za-z0-9_-]/g,'');
 try{ if(SID) localStorage.setItem('cefca_sid',SID); else SID = localStorage.getItem('cefca_sid')||''; }catch(e){}
 var BASE = 'https://script.google.com/macros/s/'+SID+'/exec';
-var role = null, team = '', vals = [], confirmRel = false, booting = !!QR_ROLE;
+var role = null, team = '', vals = [], confirmRel = false, booting = !!QR_ROLE, lastRole = null, reclaiming = false;
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function show(id){['v-role','v-team','v-score'].forEach(function(v){$(v).classList.toggle('hidden',v!==id)})}
@@ -89,10 +89,17 @@ function call(fn){var a=arguments,q;
   else if(fn==='jClaim')q='api=claim&r='+encodeURIComponent(a[2]);
   else if(fn==='jRelease')q='api=release';
   else q='api=score&team='+encodeURIComponent(a[2])+'&c='+a[3].join(',');
-  return fetch(BASE+'?'+q+'&t='+encodeURIComponent(a[1])).then(function(r){return r.json()})}
+  var ctl=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ctl)ctl.abort()},20000);
+  return fetch(BASE+'?'+q+'&t='+encodeURIComponent(a[1]),ctl?{signal:ctl.signal}:{}).then(function(r){clearTimeout(tm);return r.json()},function(e){clearTimeout(tm);throw e})}
 function render(s){
   var prev = role; role = s.role;
   if(!role&&booting){$('who').textContent='Se conectează…';show('none');return}
+  if(role)lastRole=role;
+  /* telefonul a stat în fundal și serverul i-a eliberat rolul: îl reia singur, dacă încă e liber */
+  if(!role&&lastRole&&!reclaiming){
+    if(s.roles[lastRole]==='free'){reclaiming=true;claim(lastRole).then(function(){reclaiming=false},function(){reclaiming=false});return}
+    lastRole=null}
+  if(!role&&reclaiming)return;
   if(!role){
     if(prev){note('Rolul tău a fost preluat de alt telefon. Alege din nou.','err')}
     $('who').textContent='Alege rolul tău';
@@ -138,7 +145,7 @@ $('btn-switch').onclick=function(){
   var b=$('btn-switch');
   if(!confirmRel){confirmRel=true;b.textContent='Apasă încă o dată pentru a elibera Jurat '+role;setTimeout(function(){confirmRel=false;b.textContent='Schimbă rolul (alt jurat)'},5000);return}
   confirmRel=false;b.textContent='Schimbă rolul (alt jurat)';
-  lsSet('cefca_noauto','1');
+  lsSet('cefca_noauto','1');lastRole=null;
   call('jRelease',TOK).then(function(){return refresh()}).catch(function(){note('Nu s-a putut contacta serverul.','err')});
 };
 $('btn-cancel').onclick=function(){show('v-team')};
@@ -148,11 +155,18 @@ $('btn-send').onclick=function(){
   var bad=vals.length!==CRITERIA.length||vals.some(function(v){return !(v>=1)});
   if(bad){note('Te rog completează toate cele 5 criterii înainte de a trimite.','err');return}
   sending=true;$('btn-send').textContent='Se trimite…';
-  call('jScore',TOK,team,vals).then(function(j){
-    if(j.ok){$('team').value='';show('v-team');render(j.state);note('Evaluarea a fost trimisă.','ok')}
-    else{note(j.error||'Nu s-a putut trimite evaluarea.','err')}
-  }).catch(function(){note('Nu s-a putut trimite — verifică internetul telefonului și încearcă din nou.','err')})
-  .then(function(){sending=false;$('btn-send').textContent='Trimite evaluarea'});
+  function done(){sending=false;$('btn-send').textContent='Trimite evaluarea'}
+  function ok(j){$('team').value='';show('v-team');render(j.state);note('Evaluarea a fost trimisă.','ok');window.scrollTo(0,0)}
+  function send(retry){
+    return call('jScore',TOK,team,vals).then(function(j){
+      if(j.ok){ok(j);return}
+      /* rolul a expirat cat telefonul a stat in fundal: il reia si retrimite o data */
+      if(retry&&lastRole&&/rol de jurat activ/.test(j.error||'')){
+        return call('jClaim',TOK,lastRole).then(function(c){
+          if(c.ok)return send(false);
+          note(c.error||'Rolul tău nu mai e liber. Revino la pagina principală.','err')})}
+      note(j.error||'Nu s-a putut trimite evaluarea.','err')})}
+  send(true).catch(function(){note('Nu s-a putut trimite — verifică internetul telefonului și apasă din nou.','err')}).then(done)
 };
 function isFreshScan(){try{var n=performance.getEntriesByType('navigation')[0];return !n||n.type!=='reload'}catch(e){return true}}
 /* scanare nouă a unui cartonaș: telefonul devine juratul scanat (chiar dacă avea alt rol sau l-a eliberat manual);
@@ -163,5 +177,6 @@ function autoClaim(s){
   if(isFreshScan()){if(s.role!==QR_ROLE){lsSet('cefca_noauto',null);return claim(QR_ROLE).then(endBoot,endBoot)}return endBoot()}
   if(!s.role&&!lsGet('cefca_noauto'))return claim(QR_ROLE).then(endBoot,endBoot);
   endBoot()}
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&SID&&!booting)refresh()});
 if(!SID){$('who').textContent='Scanează cartonașul tău de jurat (codul QR).'}else{refresh().then(autoClaim,function(){endBoot()});setInterval(refresh,7000)}
 </script></body></html>
