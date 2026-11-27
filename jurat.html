@@ -88,7 +88,7 @@ function call(fn){var a=arguments,q;
   if(fn==='jState')q='api=state';
   else if(fn==='jClaim')q='api=claim&r='+encodeURIComponent(a[2]);
   else if(fn==='jRelease')q='api=release';
-  else q='api=score&team='+encodeURIComponent(a[2])+'&c='+a[3].join(',');
+  else q='api=score&team='+encodeURIComponent(a[2])+'&v='+a[3].join('');
   var ctl=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ctl)ctl.abort()},20000);
   return fetch(BASE+'?'+q+'&t='+encodeURIComponent(a[1]),ctl?{signal:ctl.signal}:{}).then(function(r){clearTimeout(tm);return r.json()},function(e){clearTimeout(tm);throw e})}
 function render(s){
